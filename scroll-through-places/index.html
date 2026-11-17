@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scroll through places | Made You Look</title>
+<meta name="description" content="Scrolling pushes you into one place until the next one opens up inside it.">
+<meta property="og:title" content="Scroll through places | Made You Look">
+<meta property="og:description" content="Scrolling pushes you into one place until the next one opens up inside it.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%232a3a74'/><text x='16' y='23' font-family='Arial' font-weight='700' font-size='20' text-anchor='middle' fill='%23f3ecdc'>S</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="page" style="padding-bottom:0">
+
+  <nav class="topnav" aria-label="Site">
+    <a href="../">Made You Look</a>
+    <a href="https://hellasage.com">Hella Sage</a>
+  </nav>
+
+  <header class="xhead">
+    <div class="meta">
+      <span class="num">02</span>
+      <span class="status">Mechanic is up, needs my photos</span>
+    </div>
+    <h1>Scroll through places</h1>
+    <p class="lede">Scrolling pushes you into one place until the next one opens up inside it. No clicking, no slides, just the scroll you were already doing.</p>
+  </header>
+
+  <p class="trip-intro">Three stops, starting right below. <a href="#writeup">Skip to the write-up</a></p>
+</div>
+
+<!--
+  Each .stop is one place. To use a real photo, replace the .room inside its .plate with
+  <img src="your-photo.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+  and rewrite the caption. Add or remove stops freely; the script counts them.
+-->
+<section class="trip" id="trip" aria-label="The trip">
+  <div class="trip-view">
+
+    <figure class="stop">
+      <div class="plate" aria-hidden="true">
+        <div class="room">
+          <div class="pl back"></div><div class="pl left"></div><div class="pl right"></div><div class="pl floor"></div><div class="pl ceil"></div>
+          <div class="dot" style="left:16%;top:30%;transform:translateZ(calc(var(--d) * -.5))"></div>
+          <div class="dot cream" style="left:76%;top:58%;transform:translateZ(calc(var(--d) * -.25))"></div>
+        </div>
+      </div>
+      <figcaption>
+        <p class="small">Stop 1 of 3</p>
+        <h3>A caption stays pinned here</h3>
+        <p>The picture behind it keeps moving. This is where I'd say what happened in this place.</p>
+      </figcaption>
+    </figure>
+
+    <figure class="stop">
+      <div class="plate" aria-hidden="true">
+        <div class="room oak">
+          <div class="pl back"></div><div class="pl left"></div><div class="pl right"></div><div class="pl floor"></div><div class="pl ceil"></div>
+          <div class="dot cream" style="left:20%;top:60%;transform:translateZ(calc(var(--d) * -.4))"></div>
+          <div class="dot cream" style="left:72%;top:26%;transform:translateZ(calc(var(--d) * -.2))"></div>
+        </div>
+      </div>
+      <figcaption>
+        <p class="small">Stop 2 of 3</p>
+        <h3>It swaps at the doorway</h3>
+        <p>The caption changes the moment the next room fills the screen, so the words and the picture never disagree.</p>
+      </figcaption>
+    </figure>
+
+    <figure class="stop">
+      <div class="plate" aria-hidden="true">
+        <div class="room moss">
+          <div class="pl back"></div><div class="pl left"></div><div class="pl right"></div><div class="pl floor"></div><div class="pl ceil"></div>
+          <div class="dot" style="left:30%;top:34%;transform:translateZ(calc(var(--d) * -.55))"></div>
+          <div class="dot cream" style="left:64%;top:56%;transform:translateZ(calc(var(--d) * -.3))"></div>
+        </div>
+      </div>
+      <figcaption>
+        <p class="small">Stop 3 of 3</p>
+        <h3>Last stop</h3>
+        <p>Nothing opens inside this one. Keep going and the page turns back into a normal page.</p>
+      </figcaption>
+    </figure>
+
+    <p class="trip-hint" id="hint" aria-hidden="true">Keep scrolling</p>
+    <div class="trip-bar" id="bar" aria-hidden="true"></div>
+  </div>
+</section>
+
+<div class="page" id="writeup" style="padding-top:8px">
+  <p class="muted small">Stand-in rooms. Each one gets swapped for a photo of a place I've worked or shot in.</p>
+
+  <div class="cols">
+    <main>
+
+      <section aria-labelledby="how">
+        <h2 id="how">How it works</h2>
+        <p>Every place is a full-screen layer. The one you're in scales up as you scroll, and the next one sits in the middle of it at 30% size, growing at the same rate. When the small one reaches full size it becomes the one you're in. One number ties those scales together, so there's no jump at the handoff.</p>
+        <p>It runs on the browser's own scrolling. The section is very tall and the view sticks to the top of the window while you pass through. Your scrollbar, keyboard, trackpad and thumb all work the way they always do.</p>
+      </section>
+
+      <section aria-labelledby="cost">
+        <h2 id="cost">What it costs</h2>
+        <p class="muted">Numbers go in once I've run it on more than my own laptop.</p>
+        <div class="costs">
+          <div class="head" aria-hidden="true"><span>Cost</span><span>What I already know</span><span>Measured</span></div>
+          <dl>
+            <div>
+              <dt>Scroll length</dt>
+              <dd>Three stops take about four screens of scrolling. Anyone who came for what's underneath has to get through it, which is why there's a skip link above the first stop.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>Photo size</dt>
+              <dd>Each picture gets blown up to more than three times its size before it hands off. Real photos have to be large to survive that, and large photos are slow to load.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>Fast scrollers</dt>
+              <dd>Captions change at an exact scroll position. Flick hard enough and you can pass a stop without reading it.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>Older devices</dt>
+              <dd>Every frame redraws full-screen layers. Phones handle scaling well, but I haven't tried a tired laptop.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>People who can't use it</dt>
+              <dd>Reduced-motion settings get the three stops as a plain stack with their captions. So does anyone whose browser blocks scripts.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="verdict" aria-labelledby="verdict">
+        <h2 id="verdict" class="label">Would I ship it?</h2>
+        <p class="big">No verdict yet</p>
+        <p>This fills in once it has real photos in it and a few people have scrolled it on their own devices.</p>
+      </section>
+
+    </main>
+
+    <aside aria-labelledby="plan">
+      <h2 id="plan" class="label">Build notes</h2>
+      <dl class="plan">
+        <dt>Scrolling</dt>
+        <dd>The browser's own, plus a sticky view. No scroll library.</dd>
+        <dt>Zoom</dt>
+        <dd>Each layer is scaled by a power of 0.3, so any number of stops nest without a seam</dd>
+        <dt>Scenes</dt>
+        <dd>Felt rooms for now, then my own photos</dd>
+        <dt>Seen in</dt>
+        <dd>Dominik Fojcik's portfolio, which flies a camera through full 3D scenes as you scroll</dd>
+        <dt>Code</dt>
+        <dd><a href="https://github.com/SageWiz/made-you-look/tree/main/scroll-through-places">On GitHub</a></dd>
+      </dl>
+    </aside>
+  </div>
+
+  <nav class="nextnav" aria-label="More experiments">
+    <a href="../">All experiments</a>
+    <a href="../portrait-reveal/">Next: 03 Portrait reveal</a>
+  </nav>
+
+  <footer class="site">
+    <span>Made by Sage in South Florida</span>
+    <nav aria-label="Elsewhere">
+      <a href="https://www.instagram.com/hellasage/">Instagram</a>
+      <a href="https://github.com/sagewiz">GitHub</a>
+      <a href="https://sejulphanord.com">sejulphanord.com</a>
+    </nav>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const trip = document.getElementById('trip');
+  const view = trip.querySelector('.trip-view');
+  const stops = [...trip.querySelectorAll('.stop')];
+  const plates = stops.map((s) => s.querySelector('.plate'));
+  const bar = document.getElementById('bar'), hint = document.getElementById('hint');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const n = stops.length;
+
+  // The next place sits inside the current one at this fraction of its size.
+  const DOOR = 0.3;
+  const PUSH = 1 / DOOR - 1;   // how far the current place has to grow for the door to fill the screen
+  let queued = false;
+
+  function update() {
+    queued = false;
+    if (!trip.classList.contains('live')) return;
+    const r = trip.getBoundingClientRect();
+    const span = r.height - view.offsetHeight;
+    const p = span > 0 ? Math.max(0, Math.min(1, -r.top / span)) : 0;
+    const P = Math.min(p * n, n - 0.0001);
+    const i = Math.floor(P), u = P - i;
+    const last = i === n - 1;
+    plates.forEach((plate, j) => {
+      if (j < i) { plate.style.visibility = 'hidden'; return; }
+      // Stop i is at 1..1/DOOR. Each later stop is DOOR times the one before it.
+      const s = last ? 1 + u * 0.12 : Math.pow(DOOR, j - i) * (1 + PUSH * u);
+      plate.style.visibility = 'visible';
+      plate.style.transform = 'scale(' + s.toFixed(5) + ')';
+      plate.style.setProperty('--s', s.toFixed(5));
+      plate.style.setProperty('--frame', j > i ? '1' : '0');
+      plate.style.zIndex = String(j);
+    });
+    stops.forEach((s, j) => s.classList.toggle('on', j === i));
+    bar.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+    hint.classList.toggle('gone', p > 0.02);
+  }
+  function queue() { if (!queued) { queued = true; requestAnimationFrame(update); } }
+
+  function setMode() {
+    const live = !reduce.matches;
+    trip.classList.toggle('live', live);
+    if (!live) {
+      plates.forEach((plate) => { plate.removeAttribute('style'); });
+      stops.forEach((s) => s.classList.remove('on'));
+    }
+    queue();
+  }
+
+  window.addEventListener('scroll', queue, { passive: true });
+  window.addEventListener('resize', queue);
+  if (reduce.addEventListener) reduce.addEventListener('change', setMode);
+  setMode();
+})();
+</script>
+</body>
+</html>

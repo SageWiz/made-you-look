@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portrait reveal | Made You Look</title>
+<meta name="description" content="A portrait that loads as a field of characters. Drag across it and the real photo comes through.">
+<meta property="og:title" content="Portrait reveal | Made You Look">
+<meta property="og:description" content="A portrait that loads as a field of characters. Drag across it and the real photo comes through.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%232a3a74'/><text x='16' y='23' font-family='Arial' font-weight='700' font-size='20' text-anchor='middle' fill='%23f3ecdc'>S</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="page">
+
+  <nav class="topnav" aria-label="Site">
+    <a href="../">Made You Look</a>
+    <a href="https://hellasage.com">Hella Sage</a>
+  </nav>
+
+  <header class="xhead">
+    <div class="meta">
+      <span class="num">03</span>
+      <span class="status">First build is up</span>
+    </div>
+    <h1>Portrait reveal</h1>
+    <p class="lede">The picture loads as a field of characters. Drag across it and the real photo comes through.</p>
+  </header>
+
+  <section class="reveal-wrap" aria-label="Live demo">
+    <!-- The real photo sits underneath with its alt text. The canvas on top only ever holds the characters. -->
+    <div class="reveal" id="stage">
+      <img id="photo" src="./portrait.jpg" width="1000" height="1000" alt="Sage, in glasses and a beard, looking down at the camera against a cloudy sky" draggable="false">
+      <canvas id="chars" aria-hidden="true"></canvas>
+      <div class="grip" id="grip" role="slider" tabindex="0" aria-label="How much of the picture is characters" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-valuetext="All characters">
+        <span aria-hidden="true"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6l-5 5 5 5"/><path d="M14 6l5 5-5 5"/></svg></span>
+      </div>
+      <div class="oops" id="oops" role="alert" hidden>
+        <p>Couldn't load the photo.</p>
+        <button type="button" class="btn ghost" id="retry">Try again</button>
+      </div>
+    </div>
+
+    <div class="reveal-side">
+      <p>Drag anywhere on the picture, or focus the handle and use the arrow keys.</p>
+      <div>
+        <label for="cols">Characters across: <span id="cols-out">72</span></label>
+        <input id="cols" type="range" min="24" max="120" step="4" value="72">
+      </div>
+      <p class="muted small">Slide it down and watch where the face stops reading as a face. That number is the real limit of this effect on a small screen.</p>
+    </div>
+  </section>
+
+  <div class="cols">
+    <main>
+
+      <section aria-labelledby="how">
+        <h2 id="how">How it works</h2>
+        <p>The photo gets cut into a grid of cells. For each cell, the page averages how dark the pixels inside it are and picks a character with about that much ink: a space for the lightest patches, an @ for the darkest. It happens in your browser, which is why the slider can redraw it on the spot.</p>
+        <p>Dragging doesn't redraw anything. The characters are a layer sitting on top of the photo, and the handle decides how much of that layer you can see. Both layers are the same size, so every character sits exactly over the patch of photo it stands for.</p>
+      </section>
+
+      <section aria-labelledby="cost">
+        <h2 id="cost">What it costs</h2>
+        <p class="muted">Numbers go in once I've run it on more than my own laptop.</p>
+        <div class="costs">
+          <div class="head" aria-hidden="true"><span>Cost</span><span>What I already know</span><span>Measured</span></div>
+          <dl>
+            <div>
+              <dt>First impression</dt>
+              <dd>You can't tell who it is at first. That's the hook, and it's also a risk on a page where people came to see who they're dealing with.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>Small screens</dt>
+              <dd>Fewer characters fit across a phone, and each one has to stay big enough to look like a character. The slider shows how fast the face falls apart.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>Photo choice</dt>
+              <dd>It needs clear contrast between the face and what's behind it. A busy background turns into noise.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>Work for the device</dt>
+              <dd>The grid is worked out once per size change. Dragging is free, since it only moves a clipping edge.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>People who can't use it</dt>
+              <dd>The handle is a keyboard slider. The real photo and its description are in the page underneath, so a screen reader gets the picture and skips the characters. Reduced-motion settings skip the opening sweep.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="verdict" aria-labelledby="verdict">
+        <h2 id="verdict" class="label">Would I ship it?</h2>
+        <p class="big">No verdict yet</p>
+        <p>This fills in after I've watched a few people meet it cold and seen whether they drag or just scroll past.</p>
+      </section>
+
+    </main>
+
+    <aside aria-labelledby="plan">
+      <h2 id="plan" class="label">Build notes</h2>
+      <dl class="plan">
+        <dt>Drawing</dt>
+        <dd>One canvas, no library</dd>
+        <dt>Characters</dt>
+        <dd>Ten of them, lightest to darkest: space . : - = + * # % @</dd>
+        <dt>Reveal</dt>
+        <dd>A CSS clip on the character layer</dd>
+        <dt>History</dt>
+        <dd>Second go at this. The first version lived on my old portfolio.</dd>
+        <dt>Seen in</dt>
+        <dd>The opening of Dominik Fojcik's portfolio, where a wireframe grid resolves into his face</dd>
+        <dt>Code</dt>
+        <dd><a href="https://github.com/SageWiz/made-you-look/tree/main/portrait-reveal">On GitHub</a></dd>
+      </dl>
+    </aside>
+  </div>
+
+  <nav class="nextnav" aria-label="More experiments">
+    <a href="../">All experiments</a>
+    <a href="../search-builds-the-page/">Next: 04 Search box that builds the page</a>
+  </nav>
+
+  <footer class="site">
+    <span>Made by Sage in South Florida</span>
+    <nav aria-label="Elsewhere">
+      <a href="https://www.instagram.com/hellasage/">Instagram</a>
+      <a href="https://github.com/sagewiz">GitHub</a>
+      <a href="https://sejulphanord.com">sejulphanord.com</a>
+    </nav>
+  </footer>
+
+</div>
+
+<script>
+(() => {
+  const RAMP = ' .:-=+*#%@';      // lightest to darkest
+  const CELL_ASPECT = 0.55;       // a character cell is about this wide for its height
+  const SUB = 4;                  // sample points per cell, each way
+  const REST = 58;                // where the handle settles after the opening sweep
+
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), img = $('photo'), cv = $('chars'), grip = $('grip');
+  const colsIn = $('cols'), colsOut = $('cols-out'), oops = $('oops');
+  const ctx = cv.getContext('2d');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let split = reduce ? REST : 100;
+  let touched = false, sweep = 0;
+
+  function setSplit(v) {
+    split = Math.max(0, Math.min(100, v));
+    stage.style.setProperty('--split', split.toFixed(2) + '%');
+    const pct = Math.round(split);
+    grip.setAttribute('aria-valuenow', String(pct));
+    grip.setAttribute('aria-valuetext', pct === 100 ? 'All characters' : pct === 0 ? 'All photo' : pct + '% characters');
+  }
+
+  // Draw the whole character layer once. Dragging never calls this.
+  function draw() {
+    const size = stage.clientWidth;
+    if (!size || !img.complete || !img.naturalWidth) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = cv.height = Math.round(size * dpr);
+
+    // Keep cells at least 5px wide so characters stay characters on a phone.
+    const most = Math.max(24, Math.min(120, Math.floor(size / 5 / 4) * 4));
+    if (Number(colsIn.max) !== most) colsIn.max = String(most);
+    if (Number(colsIn.value) > most) colsIn.value = String(most);
+    const cols = Number(colsIn.value);
+    const rows = Math.max(8, Math.round(cols * CELL_ASPECT));
+    colsOut.textContent = String(cols);
+    const cw = size / cols, ch = size / rows;
+
+    // Sample in cell space: shrink the photo to SUB x SUB points per cell, then average each cell.
+    const sw = cols * SUB, sh = rows * SUB;
+    const sc = document.createElement('canvas');
+    sc.width = sw; sc.height = sh;
+    const sx = sc.getContext('2d', { willReadFrequently: true });
+    sx.imageSmoothingQuality = 'high';
+    sx.drawImage(img, 0, 0, sw, sh);
+    let px;
+    try { px = sx.getImageData(0, 0, sw, sh).data; }
+    catch (_) { cv.hidden = true; grip.hidden = true; return; }   // photo opened from disk, not a server
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = '#131a36';
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = '#f3ecdc';
+    ctx.font = '700 ' + Math.min(ch * 0.92, cw / 0.6).toFixed(2) + 'px ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        let sum = 0;
+        for (let y = 0; y < SUB; y++) {
+          let o = ((r * SUB + y) * sw + c * SUB) * 4;
+          for (let x = 0; x < SUB; x++, o += 4) sum += 0.2126 * px[o] + 0.7152 * px[o + 1] + 0.0722 * px[o + 2];
+        }
+        const dark = 1 - sum / (SUB * SUB * 255);
+        const k = RAMP[Math.min(RAMP.length - 1, Math.floor(dark * RAMP.length))];
+        if (k !== ' ') ctx.fillText(k, (c + 0.5) * cw, (r + 0.5) * ch);
+      }
+    }
+  }
+
+  // ---- dragging ----
+  function fromPointer(e) {
+    const r = stage.getBoundingClientRect();
+    if (r.width) setSplit(((e.clientX - r.left) / r.width) * 100);
+  }
+  function stopSweep() { touched = true; cancelAnimationFrame(sweep); }
+  stage.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.oops')) return;
+    stopSweep();
+    try { stage.setPointerCapture(e.pointerId); } catch (_) {}
+    fromPointer(e);
+  });
+  stage.addEventListener('pointermove', (e) => { if (stage.hasPointerCapture && stage.hasPointerCapture(e.pointerId)) fromPointer(e); });
+  grip.addEventListener('keydown', (e) => {
+    const move = { ArrowLeft: -2, ArrowDown: -2, ArrowRight: 2, ArrowUp: 2, PageDown: -10, PageUp: 10 }[e.key];
+    if (move != null) { e.preventDefault(); stopSweep(); setSplit(split + move); }
+    else if (e.key === 'Home') { e.preventDefault(); stopSweep(); setSplit(0); }
+    else if (e.key === 'End') { e.preventDefault(); stopSweep(); setSplit(100); }
+  });
+
+  // ---- redraw when the size or the grid changes ----
+  let pending = 0;
+  function queueDraw() { cancelAnimationFrame(pending); pending = requestAnimationFrame(draw); }
+  colsIn.addEventListener('input', queueDraw);
+  if ('ResizeObserver' in window) new ResizeObserver(queueDraw).observe(stage);
+  else window.addEventListener('resize', queueDraw);
+
+  // ---- opening sweep: all characters, then ease back so the photo shows there's something to find ----
+  function openingSweep() {
+    if (reduce || touched) return;
+    const t0 = performance.now(), from = 100, dur = 1100;
+    const step = (now) => {
+      if (touched) return;
+      const t = Math.min(1, (now - t0) / dur);
+      setSplit(from + (REST - from) * (1 - Math.pow(1 - t, 3)));
+      if (t < 1) sweep = requestAnimationFrame(step);
+    };
+    sweep = requestAnimationFrame(step);
+  }
+
+  function ready() {
+    oops.hidden = true; cv.hidden = false; grip.hidden = false;
+    draw();
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some((en) => en.isIntersecting)) { io.disconnect(); setTimeout(openingSweep, 500); }
+      }, { threshold: 0.6 });
+      io.observe(stage);
+    } else { openingSweep(); }
+  }
+  function failed() { oops.hidden = false; cv.hidden = true; grip.hidden = true; }
+
+  $('retry').addEventListener('click', () => { img.src = './portrait.jpg?' + Date.now(); });
+  img.addEventListener('load', ready);
+  img.addEventListener('error', failed);
+  setSplit(split);
+  if (img.complete) { if (img.naturalWidth) ready(); else failed(); }
+})();
+</script>
+</body>
+</html>

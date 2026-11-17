@@ -10,15 +10,18 @@ Live at https://hellasage.com/made-you-look/
 | --- | --- |
 | `index.html` | The series index |
 | `head-tracked-window/` | 01, the screen as a window you look through |
+| `scroll-through-places/` | 02, scrolling pushes you through a chain of places |
+| `portrait-reveal/` | 03, a portrait drawn in characters with a drag-to-reveal handle |
+| `search-builds-the-page/` | 04, a search box that assembles the page from your question |
 | `assets/site.css` | Styles shared by every page |
 
 Plain HTML, CSS and JS. No build step. GitHub Pages serves the `main` branch as is.
 
 ## Adding an experiment
 
-1. Copy `head-tracked-window/` to a new folder and rename it. The folder name is the URL.
+1. Copy one of the experiment folders and rename it. The folder name is the URL.
 2. Build the page. Keep the experiment's script inside its own `index.html`.
-3. In the root `index.html`, update that experiment's row (status, link).
+3. In the root `index.html`, add a row for it under "Also up".
 4. Fill in "What it costs" with things you measured, and give it a verdict.
 
 ## Running it locally
@@ -28,3 +31,10 @@ Camera and tilt need a secure page, so open it through a local server, not as a 
     python3 -m http.server 8000
 
 Then visit http://localhost:8000/
+
+## Things you'll want to edit
+
+- **02 photos.** In `scroll-through-places/index.html`, each `.stop` holds a stand-in room. Swap the `.room` for an `<img>` and rewrite the caption. The comment above the section shows the markup.
+- **03 photo.** Replace `portrait-reveal/portrait.jpg` with any square photo and update the `alt` text on the `<img>`.
+- **04 facts.** Everything the search box knows is the `TOPICS` list at the top of the script in `search-builds-the-page/index.html`.
+- **Verdicts and measurements.** Each page has a "What it costs" table and a "Would I ship it?" section waiting for real numbers.

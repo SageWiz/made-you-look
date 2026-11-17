@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search box that builds the page | Made You Look</title>
+<meta name="description" content="The page starts as one box. What you ask decides which parts of it appear.">
+<meta property="og:title" content="Search box that builds the page | Made You Look">
+<meta property="og:description" content="The page starts as one box. What you ask decides which parts of it appear.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%232a3a74'/><text x='16' y='23' font-family='Arial' font-weight='700' font-size='20' text-anchor='middle' fill='%23f3ecdc'>S</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="page">
+
+  <nav class="topnav" aria-label="Site">
+    <a href="../">Made You Look</a>
+    <a href="https://hellasage.com">Hella Sage</a>
+  </nav>
+
+  <header class="xhead">
+    <div class="meta">
+      <span class="num">04</span>
+      <span class="status">First build is up</span>
+    </div>
+    <h1>Search box that builds the page</h1>
+    <p class="lede">The page starts as one box. What you ask decides which parts of it appear.</p>
+  </header>
+
+  <section aria-label="Live demo">
+    <form class="askbox" id="form" role="search" autocomplete="off">
+      <label for="q">Ask about Sage</label>
+      <input id="q" name="q" type="search" placeholder="where does he work" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+      <div class="tries">
+        <span class="muted small">Or try:</span>
+        <button type="button" class="btn ghost" data-try="where does he work">where does he work</button>
+        <button type="button" class="btn ghost" data-try="side projects">side projects</button>
+        <button type="button" class="btn ghost" data-try="what camera">what camera</button>
+        <button type="button" class="btn ghost" data-try="weather in miami">weather in miami</button>
+      </div>
+    </form>
+
+    <div class="built" id="built" aria-live="polite">
+      <p class="empty">Nothing here yet. The page shows up when you ask for it.</p>
+    </div>
+    <noscript><p class="muted">This one needs JavaScript. Everything it knows is also on <a href="https://sejulphanord.com">sejulphanord.com</a>.</p></noscript>
+  </section>
+
+  <div class="cols">
+    <main>
+
+      <section aria-labelledby="how">
+        <h2 id="how">How it works</h2>
+        <p>There's no AI behind this. The page carries a short list of facts about me, and each group of facts is tagged with words people might use to ask for it. Your question gets split into words, the words get scored against those tags, and the best-scoring groups are added to the page as you type.</p>
+        <p>If nothing scores high enough, it assumes the question isn't about me and points you to Google. Nothing you type leaves your browser unless you take that link.</p>
+      </section>
+
+      <section aria-labelledby="cost">
+        <h2 id="cost">What it costs</h2>
+        <p class="muted">Numbers go in once I've run it on more than my own laptop.</p>
+        <div class="costs">
+          <div class="head" aria-hidden="true"><span>Cost</span><span>What I already know</span><span>Measured</span></div>
+          <dl>
+            <div>
+              <dt>Wrong guesses</dt>
+              <dd>Matching words can't tell "where does he work" from "does this work". The line under the results says what it matched on, so a wrong page can at least be explained.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>Blank start</dt>
+              <dd>An empty box hides everything that's there. The sample questions exist because nobody arrives knowing what to ask.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>Upkeep</dt>
+              <dd>Every fact lives in one list inside the page. New job, new project, new camera: somebody has to remember to edit it.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>Search engines</dt>
+              <dd>The facts only appear after someone types, so a crawler sees an empty page. A shipped version needs the same content somewhere as plain text.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>People who can't use it</dt>
+              <dd>It's a normal form field, and results are announced as they change. Without scripts there's nothing to show, so that case links out to my portfolio.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="verdict" aria-labelledby="verdict">
+        <h2 id="verdict" class="label">Would I ship it?</h2>
+        <p class="big">No verdict yet</p>
+        <p>This fills in after I've seen what people type when nobody's suggesting anything.</p>
+      </section>
+
+    </main>
+
+    <aside aria-labelledby="plan">
+      <h2 id="plan" class="label">Build notes</h2>
+      <dl class="plan">
+        <dt>Matching</dt>
+        <dd>Word scoring in the browser. No server, no model.</dd>
+        <dt>Facts</dt>
+        <dd>The same ones that are on sejulphanord.com</dd>
+        <dt>Blocks</dt>
+        <dd>A title line, rows, quick facts and tiles, borrowed from search-engine info panels</dd>
+        <dt>Links</dt>
+        <dd>The question goes in the address, so a results page can be shared</dd>
+        <dt>Seen in</dt>
+        <dd>Nowhere. This one's my own idea.</dd>
+        <dt>Code</dt>
+        <dd><a href="https://github.com/SageWiz/made-you-look/tree/main/search-builds-the-page">On GitHub</a></dd>
+      </dl>
+    </aside>
+  </div>
+
+  <nav class="nextnav" aria-label="More experiments">
+    <a href="../">All experiments</a>
+    <a href="../head-tracked-window/">Back to 01 Head-tracked window</a>
+  </nav>
+
+  <footer class="site">
+    <span>Made by Sage in South Florida</span>
+    <nav aria-label="Elsewhere">
+      <a href="https://www.instagram.com/hellasage/">Instagram</a>
+      <a href="https://github.com/sagewiz">GitHub</a>
+      <a href="https://sejulphanord.com">sejulphanord.com</a>
+    </nav>
+  </footer>
+
+</div>
+
+<script>
+(() => {
+  // ---------------------------------------------------------------------------
+  // Everything the box knows. Edit here when something about you changes.
+  // Each topic has: label (shown in "Matched on"), keys (word: weight), build().
+  // Keys are lowercase with a trailing "s" removed ("projects" is "project").
+  // ---------------------------------------------------------------------------
+  const WHO = {
+    name: 'Sejul Phanord',
+    meta: 'Goes by Sage. Product Owner, Food & Beverage Technology, Royal Caribbean Group.'
+  };
+
+  const TOPICS = [
+    {
+      id: 'work', label: 'work',
+      keys: { work: 2, job: 2, role: 2, employer: 2, company: 2, career: 2, royal: 2, caribbean: 2, cruise: 1.5,
+              product: 1.5, owner: 1.5, analyst: 1.5, title: 1.5, position: 1.5, experience: 2, resume: 2, cv: 2,
+              profession: 2, beverage: 1.5, food: 1, 'do': 1.5 },
+      build: () => [
+        block('Roles at Royal Caribbean Group', rows([
+          ['Product Owner', 'Aug 2025 to now'],
+          ['Product Analyst', 'Dec 2022 to 2024'],
+          ['IT Project Coordinator, Food & Beverage', 'Jul to Dec 2022']
+        ])),
+        block('What the work covers', rows([
+          ['Product ownership and delivery', ''],
+          ['Field ops and shipboard rollouts', ''],
+          ['Systems thinking', '']
+        ])),
+        block('More', rows([
+          ['The full story', 'sejulphanord.com', 'https://sejulphanord.com'],
+          ['Résumé', 'Word file', 'https://sejulphanord.com/Sejul-Phanord-CV.docx']
+        ]))
+      ]
+    },
+    {
+      id: 'school', label: 'school',
+      keys: { school: 2, degree: 2, college: 2, university: 2, study: 2, studied: 2, education: 2, engineering: 2,
+              engineer: 1.5, math: 2, mathematic: 2, nova: 2, major: 2, minor: 1.5, graduate: 2, graduated: 2, industrial: 2 },
+      build: () => [
+        block('Education', facts([
+          ['Degree', 'B.S. in Industrial Engineering'],
+          ['Minor', 'Mathematics'],
+          ['School', 'Nova Southeastern University']
+        ]))
+      ]
+    },
+    {
+      id: 'where', label: 'location',
+      keys: { based: 2, live: 2, location: 2, located: 2, city: 1.5, hometown: 2, where: 0.5, florida: 0.5, miami: 0.5, from: 0.5 },
+      build: () => [ block('Where', facts([['Based in', 'South Florida']])) ]
+    },
+    {
+      id: 'projects', label: 'side projects',
+      keys: { project: 2, side: 1.5, built: 1.5, build: 1.5, made: 1, quiz: 2, close: 1, enough: 1, cafecito: 2, coffee: 2,
+              hellasage: 2, tinkering: 2, app: 1.5, github: 1.5, code: 1.5, hobby: 1 },
+      build: () => [
+        block('Side projects', tiles([
+          { title: 'Close Enough', status: 'Live', text: 'A 20-question quiz that plots how personal and how touchy you are, from family all the way out to strangers.', link: ['Take the quiz', 'https://hellasage.com/close-enough/'] },
+          { title: 'Made You Look', status: 'Live', text: "The series you're in right now. Rebuilding bits of UX and UI that grab attention, then asking if they're worth shipping.", link: ['See all four', '../'] },
+          { title: 'Cafecito', status: 'Office only', quiet: true, text: "A Power Platform vote for rounding up the after-lunch Cuban coffee run. It lives inside work, so there's nothing to click." }
+        ]))
+      ]
+    },
+    {
+      id: 'photos', label: 'photography',
+      keys: { photo: 2, photography: 2, photographer: 2, camera: 2, lens: 2, shoot: 2, picture: 2, sony: 2, sigma: 2,
+              portrait: 2, gear: 1.5, hobby: 1 },
+      build: () => [
+        block('Photography', facts([
+          ['Camera', 'Sony a6300'],
+          ['Lens', 'Sigma 18-50mm'],
+          ['Shoots', 'Portraits, events, sports, nature, travel and ships']
+        ])),
+        block('See them', rows([
+          ['Photo gallery', 'sejulphanord.com', 'https://sejulphanord.com'],
+          ['Instagram', '@hellasage', 'https://www.instagram.com/hellasage/']
+        ]))
+      ]
+    },
+    {
+      id: 'contact', label: 'getting in touch',
+      keys: { contact: 2, email: 2, reach: 2, hire: 2, hiring: 2, linkedin: 2, instagram: 2, message: 2, talk: 1.5,
+              social: 1.5, available: 1.5, freelance: 2, consulting: 2, collaborate: 2 },
+      build: () => [
+        block('Get in touch', rows([
+          ['Send a note', 'Contact form', 'https://sejulphanord.com/#contact'],
+          ['LinkedIn', 'sejul-phanord', 'https://www.linkedin.com/in/sejul-phanord/'],
+          ['Instagram', '@hellasage', 'https://www.instagram.com/hellasage/']
+        ])),
+        block('Open to', facts([['Right now', 'Product roles, consulting, and creative collaborations']]))
+      ]
+    },
+    {
+      id: 'series', label: 'this series',
+      keys: { experiment: 2, ux: 2, ui: 2, series: 2, look: 1, made: 1 },
+      build: () => [
+        block('This series', tiles([
+          { title: 'Made You Look', status: 'Live', text: 'Four experiments so far: a head-tracked window, a scroll through places, a portrait made of characters, and this box.', link: ['See all four', '../'] }
+        ]))
+      ]
+    },
+    {
+      id: 'who', label: 'who he is',
+      keys: { who: 1, sage: 1, sejul: 1, phanord: 1, name: 1, bio: 2, background: 1.5, yourself: 1, about: 0.5 },
+      build: () => [
+        block('Quick facts', facts([
+          ['Role', 'Product Owner, Food & Beverage Technology'],
+          ['Company', 'Royal Caribbean Group'],
+          ['Based in', 'South Florida'],
+          ['Degree', 'B.S. in Industrial Engineering, minor in Mathematics']
+        ])),
+        block('Elsewhere', rows([
+          ['Portfolio', 'sejulphanord.com', 'https://sejulphanord.com'],
+          ['Side projects', 'hellasage.com', 'https://hellasage.com']
+        ]))
+      ]
+    }
+  ];
+
+  // Words that carry no meaning for matching.
+  const SKIP = new Set(('a an the is are was were be been am do does did he his him she her they them you your i me my we our ' +
+    'of in on at to for and or but what whats which how tell show give can could would will with it its this that these those ' +
+    'has have had any there here please so if as by not no yes s t').split(' '));
+
+  // ---------------------------------------------------------------------------
+  // Small DOM helpers. Text always goes in with textContent, never as markup.
+  // ---------------------------------------------------------------------------
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function block(title, body) {
+    const b = el('section', 'block');
+    b.append(el('h3', null, title), body);
+    return b;
+  }
+  function rows(items) {
+    const wrap = el('div', 'rows');
+    items.forEach(([left, right, href]) => {
+      const row = href ? el('a') : el('div');
+      if (href) row.href = href;
+      row.append(el('span', null, left), el('span', null, right));
+      wrap.append(row);
+    });
+    return wrap;
+  }
+  function facts(items) {
+    const dl = el('dl', 'facts');
+    items.forEach(([k, v]) => dl.append(el('dt', null, k), el('dd', null, v)));
+    return dl;
+  }
+  function tiles(items) {
+    const wrap = el('div', 'tiles');
+    items.forEach((t) => {
+      const a = el('article', 'tile');
+      const top = el('div', 'top');
+      top.append(el('h4', null, t.title), el('span', 'status' + (t.quiet ? ' quiet' : ''), t.status));
+      a.append(top, el('p', null, t.text));
+      if (t.link) {
+        const p = el('p', 'go'), link = el('a', null, t.link[0]);
+        link.href = t.link[1];
+        p.append(link);
+        a.append(p);
+      }
+      wrap.append(a);
+    });
+    return wrap;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Matching
+  // ---------------------------------------------------------------------------
+  function words(q) {
+    const raw = q.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+    const out = raw
+      .map((w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss')) ? w.slice(0, -1) : w)
+      .filter((w) => !SKIP.has(w));
+    // "do" is noise in "how do I..." but it's the whole point of "what does he do".
+    if (raw.length > 1 && raw[raw.length - 1] === 'do') out.push('do');
+    return out;
+  }
+  function score(topic, tokens) {
+    let total = 0;
+    for (const t of tokens) {
+      if (topic.keys[t] != null) { total += topic.keys[t]; continue; }
+      // Half-typed words still count for a bit, so the page builds while you type.
+      if (t.length >= 3) {
+        let best = 0;
+        for (const k in topic.keys) if (k.startsWith(t)) best = Math.max(best, topic.keys[k] * 0.6);
+        total += best;
+      }
+    }
+    return total;
+  }
+  function match(q) {
+    const tokens = words(q);
+    const scored = TOPICS.map((t) => ({ t, s: score(t, tokens) })).filter((x) => x.s >= 1).sort((a, b) => b.s - a.s);
+    if (!scored.length) return [];
+    const top = scored[0].s;
+    let hits = scored.filter((x) => x.s >= top * 0.6).slice(0, 3).map((x) => x.t);
+    // The side-projects block already includes this series, so don't show it twice.
+    if (hits.some((t) => t.id === 'projects')) hits = hits.filter((t) => t.id !== 'series');
+    return hits;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Building the page
+  // ---------------------------------------------------------------------------
+  const input = document.getElementById('q'), built = document.getElementById('built'), form = document.getElementById('form');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let shown = null;
+
+  function show(nodes) {
+    built.replaceChildren(...nodes);
+    nodes.forEach((n, i) => {
+      if (!n.classList.contains('block')) return;
+      if (reduce) n.classList.add('in');
+      else setTimeout(() => n.classList.add('in'), 40 + i * 70);
+    });
+  }
+
+  function render(raw) {
+    const q = raw.trim();
+    const hits = q ? match(q) : [];
+    const key = q ? (hits.length ? hits.map((t) => t.id).join('+') : 'google:' + q) : 'empty';
+    if (key === shown) return;       // same page as before, leave it alone while they keep typing
+    shown = key;
+
+    if (!q) {
+      show([el('p', 'empty', 'Nothing here yet. The page shows up when you ask for it.')]);
+      return;
+    }
+    if (!hits.length) {
+      const b = el('section', 'block');
+      const link = el('a', 'btn primary', 'Search Google for "' + q + '"');
+      link.href = 'https://www.google.com/search?q=' + encodeURIComponent(q);
+      const p = el('p'); p.style.marginTop = '22px'; p.append(link);
+      const line = el('p', null, "This box only knows about me. For everything else there's a bigger one.");
+      line.style.cssText = 'margin-top:10px;font-size:17px';
+      b.append(el('h2', 'kp-title', 'Bro, go to Google.'), line, p);
+      show([b]);
+      return;
+    }
+    const head = el('section', 'block');
+    head.append(el('h2', 'kp-title', WHO.name), el('p', 'kp-meta', WHO.meta));
+    const nodes = [head];
+    hits.forEach((t) => nodes.push(...t.build()));
+    nodes.push(el('p', 'why', 'Matched on: ' + hits.map((t) => t.label).join(', ')));
+    show(nodes);
+  }
+
+  function syncUrl(q) {
+    try {
+      const url = new URL(window.location.href);
+      if (q.trim()) url.searchParams.set('q', q.trim()); else url.searchParams.delete('q');
+      history.replaceState(null, '', url);
+    } catch (_) {}
+  }
+
+  let timer = 0;
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { render(input.value); syncUrl(input.value); }, 140);
+  });
+  form.addEventListener('submit', (e) => { e.preventDefault(); clearTimeout(timer); render(input.value); syncUrl(input.value); });
+  form.querySelectorAll('[data-try]').forEach((b) => b.addEventListener('click', () => {
+    input.value = b.dataset.try;
+    render(input.value); syncUrl(input.value);
+  }));
+
+  const start = new URLSearchParams(window.location.search).get('q');
+  if (start) { input.value = start.slice(0, 120); render(input.value); }
+})();
+</script>
+</body>
+</html>
