@@ -189,7 +189,7 @@
 
   // ---- pointer, finger, keys ----
   function fromPointer(e) {
-    if (mode === 'tilt') return;
+    if (mode === 'tilt') { if (e.type === 'pointerdown') recenterTilt(); return; }
     if (mode === 'camera' && !lost) return;
     const r = room.getBoundingClientRect();
     if (!r.width || !r.height) return;
@@ -292,14 +292,38 @@
   }
 
   // ---- phone tilt ----
+  // The browser reports tilt as two angles (beta, gamma). Used raw, gamma goes haywire when the
+  // phone is held close to upright. So turn them into the direction of "up" as the phone sees it,
+  // which stays smooth in every pose, and read left-right lean and forward-back pitch off that.
+  function tiltPose(beta, gamma, screenAngle) {
+    const D = Math.PI / 180;
+    const b = beta * D, g = gamma * D, a = (screenAngle || 0) * D;
+    const ux = -Math.sin(g) * Math.cos(b), uy = Math.sin(b), uz = Math.cos(g) * Math.cos(b);
+    // If the screen has rotated to landscape, turn the reading with it.
+    const sx = ux * Math.cos(a) - uy * Math.sin(a);
+    const sy = ux * Math.sin(a) + uy * Math.cos(a);
+    return { lean: -Math.asin(Math.max(-1, Math.min(1, sx))), pitch: Math.atan2(sy, uz) };
+  }
+  function screenAngle() {
+    if (screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
+    return typeof window.orientation === 'number' ? window.orientation : 0;
+  }
+  const LEAN_RANGE = 16 * Math.PI / 180;    // lean this far sideways to reach the edge of the view
+  const PITCH_RANGE = 22 * Math.PI / 180;   // same, tipping forward or back
   let tiltBase = null, tiltSeen = false;
   function onTilt(e) {
     if (e.gamma == null || e.beta == null) return;
     tiltSeen = true;
-    if (!tiltBase) tiltBase = { g: e.gamma, b: e.beta };
-    aim((e.gamma - tiltBase.g) / 22, (e.beta - tiltBase.b) / 22);
+    const pose = tiltPose(e.beta, e.gamma, screenAngle());
+    if (!tiltBase) tiltBase = pose;          // however you're holding it right now counts as centre
+    let dp = pose.pitch - tiltBase.pitch;
+    if (dp > Math.PI) dp -= 2 * Math.PI; else if (dp < -Math.PI) dp += 2 * Math.PI;
+    aim((pose.lean - tiltBase.lean) / LEAN_RANGE, dp / PITCH_RANGE);
   }
+  function recenterTilt() { tiltBase = null; }
   function stopTilt() { window.removeEventListener('deviceorientation', onTilt); }
+  // Turning the phone to landscape changes what "level" means, so start from centre again.
+  window.addEventListener('orientationchange', recenterTilt);
 
   async function startTilt() {
     note.textContent = '';
@@ -340,7 +364,7 @@
     chip.hidden = mode === 'ask';
     if (mode === 'mouse') setChip('Steering with the mouse', false, 'Try the camera', startCamera);
     else if (mode === 'touch') setChip('Drag to look around', false, 'Try tilt', startTilt);
-    else if (mode === 'tilt') setChip('Steering by tilt', false, 'Stop', () => { stopTilt(); mode = 'touch'; render(); });
+    else if (mode === 'tilt') setChip('Steering by tilt. Tap the room to re-centre.', false, 'Stop', () => { stopTilt(); mode = 'touch'; render(); });
     else if (mode === 'starting') setChip('Starting the camera…', false, 'Cancel', () => { stopCamera(); mode = coarse ? 'touch' : 'mouse'; render(); });
     else if (mode === 'camera' && lost) setChip("Can't see your face. Holding this view.", false, coarse ? 'Switch to finger' : 'Switch to mouse', () => { stopCamera(); mode = coarse ? 'touch' : 'mouse'; render(); });
     else if (mode === 'camera') setChip('Camera on', true, 'Turn camera off', () => { stopCamera(); mode = coarse ? 'touch' : 'mouse'; render(); });
