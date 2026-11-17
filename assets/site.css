@@ -247,6 +247,12 @@ footer.site nav{display:flex;flex-wrap:wrap;gap:6px 20px}
 .tile p{margin-top:8px;color:var(--muted)}
 .tile p.go{color:inherit;font-weight:500}
 .built .empty{color:var(--muted);font-size:17px}
+.built .block .tries{margin-top:18px}
+/* Sketches the cursors draw, one stroke each. */
+.sketch svg{display:block;width:min(200px,55vw);height:auto;color:var(--ink);overflow:visible}
+.sketch [data-stroke]{fill:none;stroke:currentColor;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+.sketch .pupil{fill:currentColor;opacity:0;transition:opacity .25s ease}
+.sketch.drawn .pupil{opacity:1}
 
 @media (max-width:640px){
   .entry .status{flex-basis:100%;padding:4px 0 0 68px}

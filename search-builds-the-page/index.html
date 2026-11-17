@@ -33,7 +33,7 @@
   <section aria-label="Live demo">
     <form class="askbox" id="form" role="search" autocomplete="off">
       <label for="q">Ask about Sage</label>
-      <input id="q" name="q" type="search" placeholder="where does he work" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+      <input id="q" name="q" type="search" maxlength="120" placeholder="where does he work" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
       <div class="tries">
         <span class="muted small">Or try:</span>
         <button type="button" class="btn ghost" data-try="where does he work">where does he work</button>
@@ -63,7 +63,7 @@
         <h2 id="how">How it works</h2>
         <p>There's no AI behind this. The page carries a short list of facts about me, and each group of facts is tagged with words people might use to ask for it. Your question gets split into words, the words get scored against those tags, and the best-scoring groups are added to the page as you type.</p>
         <p>Then a small crew of cursors builds those groups in front of you. Each cursor has one block to make: it flies to where the block will sit, drags out an outline at the block's real size, types the text in, and moves on. They aren't a loading animation laid over a finished page. The block has no text in it until its cursor types it, and tapping an outline makes that cursor finish early. Change the question and they only build what's new.</p>
-        <p>If nothing scores high enough, it assumes the question isn't about me and points you to Google. Nothing you type leaves your browser unless you take that link.</p>
+        <p>Small typos are forgiven. If a question sounds like it's about me but nothing matches, it says so and shows what it does know. Only when the question is clearly about something else does it point you to Google. Nothing you type leaves your browser unless you take that link.</p>
       </section>
 
       <section aria-labelledby="cost">
@@ -74,7 +74,7 @@
           <dl>
             <div>
               <dt>Wrong guesses</dt>
-              <dd>Matching words can't tell "where does he work" from "does this work". The line under the results says what it matched on, so a wrong page can at least be explained.</dd>
+              <dd>Matching words can't tell "where does he work" from "does this work". The line under the box says what it matched on, so a wrong page can at least be explained.</dd>
               <dd class="measured">Not measured yet</dd>
             </div>
             <div>
@@ -125,6 +125,8 @@
         <dd>Up to three cursors. They share the blocks out and work at the same time.</dd>
         <dt>Blocks</dt>
         <dd>A title line, rows, quick facts and tiles, borrowed from search-engine info panels</dd>
+        <dt>Easter eggs</dt>
+        <dd>A handful. Start by saying hi.</dd>
         <dt>Links</dt>
         <dd>The question goes in the address, so a results page can be shared</dd>
         <dt>Seen in</dt>
@@ -326,8 +328,14 @@
   // ---------------------------------------------------------------------------
   // Matching
   // ---------------------------------------------------------------------------
+  // Lowercase, strip accents and apostrophes, turn punctuation into spaces. Emoji survive.
+  function plain(q) {
+    return q.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/['’`]/g, '')
+      .replace(/[^\p{L}\p{N}\p{Extended_Pictographic}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function rawWords(q) { return plain(q).replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean); }
   function words(q) {
-    const raw = q.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+    const raw = rawWords(q);
     const out = raw
       .map((w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss')) ? w.slice(0, -1) : w)
       .filter((w) => !SKIP.has(w));
@@ -335,16 +343,30 @@
     if (raw.length > 1 && raw[raw.length - 1] === 'do') out.push('do');
     return out;
   }
+  // True if two words are one slip apart: a wrong letter, a missing or extra letter, or two swapped.
+  function near(a, b) {
+    const la = a.length, lb = b.length;
+    if (Math.abs(la - lb) > 1) return false;
+    let i = 0;
+    while (i < la && i < lb && a[i] === b[i]) i++;
+    if (la === lb) {
+      if (a.slice(i + 1) === b.slice(i + 1)) return true;                                   // wrong letter
+      return a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2);   // swapped pair
+    }
+    return la > lb ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);         // extra or missing
+  }
   function score(topic, tokens) {
     let total = 0;
     for (const t of tokens) {
       if (topic.keys[t] != null) { total += topic.keys[t]; continue; }
-      // Half-typed words still count for a bit, so the page builds while you type.
-      if (t.length >= 3) {
-        let best = 0;
-        for (const k in topic.keys) if (k.startsWith(t)) best = Math.max(best, topic.keys[k] * 0.6);
-        total += best;
+      let best = 0;
+      for (const k in topic.keys) {
+        // Half-typed words still count for a bit, so the page builds while you type.
+        if (t.length >= 3 && k.startsWith(t)) best = Math.max(best, topic.keys[k] * 0.6);
+        // So do near misses, as long as the word is long enough for a typo to be the likely story.
+        else if (t.length >= 5 && k.length >= 5 && near(t, k)) best = Math.max(best, topic.keys[k] * 0.8);
       }
+      total += best;
     }
     return total;
   }
@@ -397,16 +419,139 @@
     return b;
   }
 
+  // ---------------------------------------------------------------------------
+  // Things the box answers that aren't facts about me.
+  // ---------------------------------------------------------------------------
+  function say(title, text) {
+    const b = el('section', 'block');
+    b.append(el('h2', 'kp-title', title));
+    if (text) { const p = el('p', null, text); p.style.cssText = 'margin-top:10px;font-size:17px;max-width:52ch'; b.append(p); }
+    return b;
+  }
+  // A row of questions the box can answer. Tapping one asks it.
+  function ideas() {
+    const wrap = el('div', 'tries');
+    ['where does he work', 'school', 'side projects', 'what camera', 'how do I reach him'].forEach((q) => {
+      const b = el('button', 'btn ghost', q);
+      b.type = 'button'; b.dataset.ask = q;
+      wrap.append(b);
+    });
+    return wrap;
+  }
+  // Line drawings for the cursors. Each stroke is drawn by whichever cursor gets it.
+  const SKETCHES = {
+    smiley: { alt: 'A smiley face', strokes: ['M120 22a98 98 0 1 0 .1 0z', 'M88 88v26', 'M72 146q48 52 96 0', 'M152 88v26'] },
+    heart:  { alt: 'A heart', box: '0 40 240 180', strokes: ['M120 200C40 150 20 100 50 70c25-24 55-12 70 12', 'M120 200c80-50 100-100 70-130c-25-24-55-12-70 12'] },
+    ooo:    { alt: 'Three circles, spelling ooo', box: '0 76 240 88', strokes: ['M46 88a32 32 0 1 0 .1 0z', 'M120 88a32 32 0 1 0 .1 0z', 'M194 88a32 32 0 1 0 .1 0z'] },
+    eyes:   { alt: 'A pair of eyes that follow your pointer', box: '0 52 240 136', strokes: ['M72 62a44 58 0 1 0 .1 0z', 'M168 62a44 58 0 1 0 .1 0z'],
+              extra: '<circle class="pupil" data-cx="72" data-cy="120" cx="72" cy="120" r="15"/><circle class="pupil" data-cx="168" data-cy="120" cx="168" cy="120" r="15"/>' }
+  };
+  function sketch(name) {
+    const def = SKETCHES[name];
+    const b = el('section', 'block sketch');
+    b.dataset.sketch = name;
+    b.innerHTML = '<svg viewBox="' + (def.box || '0 0 240 240') + '" role="img" aria-label="' + def.alt + '">' +
+      def.strokes.map((d) => '<path data-stroke d="' + d + '"/>').join('') + (def.extra || '') + '</svg>';
+    return b;
+  }
+
+  // Checked in order against the tidied-up question. First one that fits wins.
+  const EGGS = [
+    { id: 'hi', test: /^(hi+|hey+|heya|hello+|hola|yo+|sup|howdy|hiya|whats up|wassup|greetings|good (morning|afternoon|evening)|👋)( there| sage| sejul| bro| man| you| everyone)?$/u,
+      parts: () => [['reply', say('Hi back.', 'Nice to meet you. Ask me something, or just enjoy the face.')], ['smiley', sketch('smiley')]] },
+    { id: 'how', test: /^(how are you|how are u|how r u|hows it going|how you doing|how are you doing|you good|u good)( today| sage| bro)?$/,
+      parts: () => [['reply', say("Can't complain.", "I'm a text box. Somebody types, I answer, the cursors do the heavy lifting.")]] },
+    { id: 'thanks', test: /^(thanks|thank you|thank u|thx|ty|tysm|gracias|appreciate it|appreciate you)( so much| a lot| sage| bro| man)?$/,
+      parts: () => [['reply', say('Anytime.')], ['heart', sketch('heart')]] },
+    { id: 'bye', test: /^(bye|bye bye|goodbye|later|laters|see ya|see you|cya|peace|adios|good night|gn)( sage| bro| man)?$/,
+      parts: () => [['reply', say('Later.', 'Thanks for looking. That was the whole point.')]] },
+    { id: 'look', test: /^look( at (this|that|me))?$/,
+      parts: () => [['eyes', sketch('eyes')], ['reply', say('Made you look.', "Move your mouse or drag a finger around. They'll follow.")]] },
+    { id: 'ooo', test: /^(o{3,}h*|oo+h+|wow+|whoa+|woah+|nice+|cool+|sick|dope|fire|🔥)$/u,
+      parts: () => [['ooo', sketch('ooo')], ['reply', say("That's the idea.", 'This whole series is things that made me go ooo.')]] },
+    { id: 'ai', test: /^((are|r) (you|u)|is this)( an?)? (ai|robot|bot|chatbot|chatgpt|gpt|claude|human|real|alive|person)$|^(ai|chatgpt|robot)$/,
+      parts: () => [['reply', say('No AI in here.', 'Just a short list of facts about me and some word matching. The cursors are the closest thing I have to staff.')]] },
+    { id: 'joke', test: /\b(joke|make me laugh|something funny)\b/,
+      parts: () => [['reply', say('A QA tester walks into a bar.', 'Orders a beer. Orders 0 beers. Orders 99999 beers. Orders a lizard. Orders -1 beers. Then a real customer walks in and asks where the bathroom is, and the bar catches fire.')]] },
+    { id: 'marco', test: /^marco$/, parts: () => [['reply', say('Polo.')]] },
+    { id: 'ping', test: /^ping$/, parts: () => [['reply', say('Pong.')]] },
+    { id: 'sudo', test: /^(sudo|admin|root|password|login|log in|hack|hacker|rm rf|drop table)\b/,
+      parts: () => [['reply', say('Nice try.', "There's no back door. It's one HTML file.")]] },
+    { id: 'roll', test: /^(do a )?barrel roll$/, after: barrelRoll,
+      parts: () => [['reply', say('Wheee.', 'Borrowed from Google, who did it first.')]] }
+  ];
+  const HELP = /^(help|menu|options|commands|idk|i dont know|what can i ask|what can i search|what do you know|what can you do|what should i ask)$/;
+  // Things I'm not putting on a website. Matched after the real topics, so "email address" still works.
+  const PRIVATE = new Set(('age old birthday born salary paid pay money earn income rich worth single married wife girlfriend boyfriend ' +
+    'dating kid address phone number religion politic vote weight height tall').split(' '));
+  const ABOUT_ME = new Set('he his him hes himself sage sejul phanord you your youre yourself u ur'.split(' '));
+
+  function barrelRoll() {
+    if (reduce || !document.body.animate) return;
+    const root = document.documentElement, body = document.body;
+    const before = root.style.overflowX;
+    root.style.overflowX = 'clip';
+    body.style.transformOrigin = (window.innerWidth / 2) + 'px ' + (window.scrollY + window.innerHeight / 2) + 'px';
+    const spin = body.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }], { duration: 1200, easing: 'ease-in-out' });
+    const tidy = () => { root.style.overflowX = before; body.style.transformOrigin = ''; };
+    spin.onfinish = tidy; spin.oncancel = tidy;
+  }
+
+  // A pair of drawn eyes: once finished, the pupils follow the pointer for as long as they're on the page.
+  function watchEyes(node) {
+    const svg = node.querySelector('svg'), pupils = [...node.querySelectorAll('.pupil')];
+    const follow = (e) => {
+      if (!node.isConnected) { window.removeEventListener('pointermove', follow); window.removeEventListener('pointerdown', follow); return; }
+      const r = svg.getBoundingClientRect(), box = svg.viewBox.baseVal, k = box.width / r.width;
+      const px = box.x + (e.clientX - r.left) * k, py = box.y + (e.clientY - r.top) * k;
+      pupils.forEach((pupil) => {
+        const dx = px - Number(pupil.dataset.cx), dy = py - Number(pupil.dataset.cy);
+        const d = Math.hypot(dx, dy) || 1, reach = Math.min(1, d / 160);
+        pupil.setAttribute('transform', 'translate(' + (dx / d * 22 * reach).toFixed(1) + ' ' + (dy / d * 32 * reach).toFixed(1) + ')');
+      });
+    };
+    window.addEventListener('pointermove', follow, { passive: true });
+    window.addEventListener('pointerdown', follow, { passive: true });
+  }
+
   function planFor(q) {
-    const hits = match(q);
-    if (!hits.length) {
-      return { blocks: [{ id: 'google:' + q, label: 'not about me', make: () => googleBlock(q) }], why: 'Nothing about Sage matched.' };
+    const text = plain(q);
+    const fromParts = (id, parts) => parts.map(([label, node], i) => ({ id: id + ':' + i, label, make: () => node }));
+
+    // 1. Easter eggs and small talk
+    const egg = EGGS.find((e) => e.test.test(text));
+    if (egg) return { blocks: fromParts('egg:' + egg.id, egg.parts()), why: "That one's an Easter egg.", after: egg.after };
+    if (HELP.test(text) || /^\?+$/.test(q.trim())) {
+      const b = say("Here's what I know.", 'Pick one, or type your own. There are a few Easter eggs in here too.');
+      b.append(ideas());
+      return { blocks: [{ id: 'help', label: 'what i know', make: () => b }], why: 'Showing what there is to ask.' };
     }
-    const blocks = [{ id: 'head', label: 'title', make: headBlock }];
-    hits.forEach((t) => t.build().forEach((node, i) => {
-      blocks.push({ id: t.id + ':' + i, label: node.querySelector('h3').textContent.toLowerCase(), make: () => node });
-    }));
-    return { blocks, why: 'Matched on: ' + hits.map((t) => t.label).join(', ') + '.' };
+
+    // 2. Facts about me
+    const hits = match(q);
+    if (hits.length) {
+      const blocks = [{ id: 'head', label: 'title', make: headBlock }];
+      hits.forEach((t) => t.build().forEach((node, i) => {
+        blocks.push({ id: t.id + ':' + i, label: node.querySelector('h3').textContent.toLowerCase(), make: () => node });
+      }));
+      return { blocks, why: 'Matched on: ' + hits.map((t) => t.label).join(', ') + '.' };
+    }
+
+    // 3. About me, but not something I answer
+    const tokens = words(q), raw = rawWords(q);
+    if (tokens.some((t) => PRIVATE.has(t))) {
+      const b = say('Not telling.', "Some things don't go on a website. Try one of these.");
+      b.append(ideas());
+      return { blocks: [{ id: 'private', label: 'not telling', make: () => b }], why: 'Some things stay off the page.' };
+    }
+    if (raw.some((t) => ABOUT_ME.has(t))) {
+      const b = say("Don't have that one.", "That sounds like it's about me, but it isn't in my list. These are.");
+      b.append(ideas());
+      return { blocks: [{ id: 'unknown:' + text, label: 'no answer', make: () => b }], why: 'Sounds like it is about Sage, but nothing matched.' };
+    }
+
+    // 4. Not about me at all
+    return { blocks: [{ id: 'google:' + q, label: 'not about me', make: () => googleBlock(q) }], why: 'Nothing about Sage matched.' };
   }
 
   // ---- animation helpers ----
@@ -448,24 +593,38 @@
   function finish(job) {
     if (job.done) return;
     job.done = true;
-    if (job.parts) job.parts.forEach((part) => { part.node.nodeValue = part.text; });
-    job.node.style.minHeight = '';
-    job.node.classList.remove('pending', 'building');
-    if (job.wire) job.wire.remove();
+    if (job.path) {
+      job.path.style.strokeDashoffset = '0';
+      job.path.dataset.done = '1';
+      const all = [...job.node.querySelectorAll('[data-stroke]')];
+      if (all.every((p) => p.dataset.done)) markDrawn(job.node);
+    } else {
+      if (job.parts) job.parts.forEach((part) => { part.node.nodeValue = part.text; });
+      job.node.style.minHeight = '';
+      job.node.classList.remove('pending', 'building');
+      if (job.wire) job.wire.remove();
+    }
     report();
   }
+  function markDrawn(node) {
+    if (node.classList.contains('drawn')) return;
+    node.classList.add('drawn');
+    if (node.dataset.sketch === 'eyes') watchEyes(node);
+  }
+  const pieces = (n) => n + (n === 1 ? ' piece' : ' pieces');
 
   function report() {
     if (!jobs.length) return;
     const left = jobs.filter((j) => !j.done).length;
     if (left) {
       const n = Math.min(CREW, jobs.length);
-      statusEl.textContent = n + (n === 1 ? ' cursor' : ' cursors') + ' building. ' + (jobs.length - left) + ' of ' + jobs.length + (jobs.length === 1 ? ' block done.' : ' blocks done.');
+      statusEl.textContent = n + (n === 1 ? ' cursor' : ' cursors') + ' building. ' + (jobs.length - left) + ' of ' + pieces(jobs.length) + ' done.';
       skipBtn.hidden = false;
     } else {
-      statusEl.textContent = 'Built ' + jobs.length + (jobs.length === 1 ? ' block. ' : ' blocks. ') + jobs.why;
+      statusEl.textContent = 'Built ' + pieces(jobs.length) + '. ' + jobs.why;
       skipBtn.hidden = true;
       built.removeAttribute('aria-busy');
+      if (jobs.after) { const after = jobs.after; jobs.after = null; after(); }
     }
   }
 
@@ -524,11 +683,28 @@
     finish(job);
   }
 
+  // Drawing one stroke of a sketch: fly to where the line starts, then trace it, leaving ink behind.
+  async function drawStroke(cur, job) {
+    const svg = job.path.ownerSVGElement, box = svg.viewBox.baseVal;
+    const at = (len) => {
+      const pt = job.path.getPointAtLength(len), r = svg.getBoundingClientRect(), b = built.getBoundingClientRect(), k = r.width / box.width;
+      return [r.left - b.left + (pt.x - box.x) * k, r.top - b.top + (pt.y - box.y) * k];
+    };
+    const fx = cur.x, fy = cur.y, first = at(0);
+    if (!await tween(FLY, job, (t) => { const e = ease(t); cur.move(fx + (first[0] - fx) * e, fy + (first[1] - fy) * e); })) return;
+    if (!await tween(Math.max(350, Math.min(1300, job.len * 3.2)), job, (t) => {
+      const len = job.len * t, here = at(len);
+      job.path.style.strokeDashoffset = String(job.len - len);
+      cur.move(here[0], here[1]);
+    })) return;
+    finish(job);
+  }
+
   async function runCursor(cur, queue, mine) {
     await wait(cur.i * 140);
     for (const job of queue) {
       if (mine !== run) return;
-      if (!job.done) await buildBlock(cur, job);
+      if (!job.done) await (job.path ? drawStroke(cur, job) : buildBlock(cur, job));
     }
     if (mine !== run) return;
     // nothing left: head back up and fade
@@ -549,16 +725,32 @@
     [...built.children].forEach((n) => { if (n !== crew && !wanted.has(n.dataset.id)) n.remove(); });
     const have = new Map([...built.children].filter((n) => n !== crew).map((n) => [n.dataset.id, n]));
 
-    const fresh = [];
+    const added = [];
     plan.blocks.forEach((b) => {
       let node = have.get(b.id);
       if (!node) {
         node = b.make();
         node.dataset.id = b.id;
-        if (!reduce) node.classList.add('pending');
-        fresh.push({ node, label: b.label, done: reduce, rush: false });
+        added.push({ node, label: b.label });
       }
       built.insertBefore(node, crew);     // also puts kept blocks in their new order
+    });
+    // Turn what was added into jobs. A block of words is one job. A sketch is one job per stroke,
+    // so several cursors end up drawing the same picture.
+    const fresh = [];
+    added.forEach(({ node, label }) => {
+      if (node.classList.contains('sketch')) {
+        if (reduce) { markDrawn(node); fresh.push({ node, label, done: true }); return; }
+        node.querySelectorAll('[data-stroke]').forEach((path) => {
+          const len = path.getTotalLength();
+          path.style.strokeDasharray = String(len);
+          path.style.strokeDashoffset = String(len);
+          fresh.push({ node, path, len, label, done: false, rush: false });
+        });
+      } else {
+        if (!reduce) node.classList.add('pending');
+        fresh.push({ node, label, done: reduce, rush: false });
+      }
     });
 
     if (!plan.blocks.length) {
@@ -567,13 +759,14 @@
       return;
     }
     if (reduce || !fresh.length) {
-      statusEl.textContent = (fresh.length ? 'Built ' + fresh.length + (fresh.length === 1 ? ' block. ' : ' blocks. ') : 'Nothing new to build. ') + plan.why;
+      statusEl.textContent = (fresh.length ? 'Built ' + pieces(fresh.length) + '. ' : 'Nothing new to build. ') + plan.why;
       skipBtn.hidden = true;
       return;
     }
 
     jobs = fresh;
     jobs.why = plan.why;
+    jobs.after = plan.after || null;
     built.setAttribute('aria-busy', 'true');
     report();
     const n = Math.min(CREW, jobs.length);
@@ -584,7 +777,7 @@
 
   function render(raw) {
     const q = raw.trim();
-    const plan = q ? planFor(q) : { blocks: [], why: '' };
+    const plan = q ? planFor(q.slice(0, 120)) : { blocks: [], why: '' };
     const key = plan.blocks.map((b) => b.id).join('+') || 'empty';
     if (key === shown) return;        // same page as before, leave the crew alone while they keep typing
     shown = key;
@@ -623,6 +816,15 @@
     makeRoom();
     render(input.value); syncUrl(input.value);
   }));
+
+  // Suggested questions inside the results ask themselves when tapped.
+  built.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-ask]');
+    if (!b) return;
+    clearTimeout(timer);
+    input.value = b.dataset.ask;
+    render(input.value); syncUrl(input.value);
+  });
 
   const start = new URLSearchParams(window.location.search).get('q');
   if (start) { input.value = start.slice(0, 120); render(input.value); }
