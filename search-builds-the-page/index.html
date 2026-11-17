@@ -43,8 +43,15 @@
       </div>
     </form>
 
-    <div class="built" id="built" aria-live="polite">
+    <div class="crewbar">
+      <p id="status" role="status"></p>
+      <button type="button" class="btn ghost" id="skip" hidden>Show it now</button>
+    </div>
+
+    <!-- .built holds the real page. .crew is the layer the cursors and wireframes move around in. -->
+    <div class="built" id="built">
       <p class="empty">Nothing here yet. The page shows up when you ask for it.</p>
+      <div class="crew" id="crew" aria-hidden="true"></div>
     </div>
     <noscript><p class="muted">This one needs JavaScript. Everything it knows is also on <a href="https://sejulphanord.com">sejulphanord.com</a>.</p></noscript>
   </section>
@@ -55,6 +62,7 @@
       <section aria-labelledby="how">
         <h2 id="how">How it works</h2>
         <p>There's no AI behind this. The page carries a short list of facts about me, and each group of facts is tagged with words people might use to ask for it. Your question gets split into words, the words get scored against those tags, and the best-scoring groups are added to the page as you type.</p>
+        <p>Then a small crew of cursors builds those groups in front of you. Each cursor has one block to make: it flies to where the block will sit, drags out an outline at the block's real size, types the text in, and moves on. They aren't a loading animation laid over a finished page. The block has no text in it until its cursor types it, and tapping an outline makes that cursor finish early. Change the question and they only build what's new.</p>
         <p>If nothing scores high enough, it assumes the question isn't about me and points you to Google. Nothing you type leaves your browser unless you take that link.</p>
       </section>
 
@@ -67,6 +75,11 @@
             <div>
               <dt>Wrong guesses</dt>
               <dd>Matching words can't tell "where does he work" from "does this work". The line under the results says what it matched on, so a wrong page can at least be explained.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>Waiting</dt>
+              <dd>Watching it build costs a few seconds that an instant page wouldn't. That's why there's a "Show it now" button, and why reduced-motion settings skip the build completely.</dd>
               <dd class="measured">Not measured yet</dd>
             </div>
             <div>
@@ -86,7 +99,7 @@
             </div>
             <div>
               <dt>People who can't use it</dt>
-              <dd>It's a normal form field, and results are announced as they change. Without scripts there's nothing to show, so that case links out to my portfolio.</dd>
+              <dd>It's a normal form field. A screen reader hears one line when the build finishes, not every letter being typed. Without scripts there's nothing to show, so that case links out to my portfolio.</dd>
               <dd class="measured">Not measured yet</dd>
             </div>
           </dl>
@@ -108,12 +121,14 @@
         <dd>Word scoring in the browser. No server, no model.</dd>
         <dt>Facts</dt>
         <dd>The same ones that are on sejulphanord.com</dd>
+        <dt>The crew</dt>
+        <dd>Up to three cursors. They share the blocks out and work at the same time.</dd>
         <dt>Blocks</dt>
         <dd>A title line, rows, quick facts and tiles, borrowed from search-engine info panels</dd>
         <dt>Links</dt>
         <dd>The question goes in the address, so a results page can be shared</dd>
         <dt>Seen in</dt>
-        <dd>Nowhere. This one's my own idea.</dd>
+        <dd>The cursors come from a reel by xiaobima__, whose site has agents draw every section as wireframes. The search box in front of them is my own idea.</dd>
         <dt>Code</dt>
         <dd><a href="https://github.com/SageWiz/made-you-look/tree/main/search-builds-the-page">On GitHub</a></dd>
       </dl>
@@ -346,48 +361,234 @@
 
   // ---------------------------------------------------------------------------
   // Building the page
+  //
+  // A query turns into a plan: an ordered list of blocks. The plan is compared with
+  // what's already on the page. Blocks that are no longer wanted go, blocks that are
+  // still wanted stay put, and each new block is handed to a cursor to build.
+  //
+  // A new block is put in the page straight away but kept invisible, so it already
+  // takes up its final space. That's what lets a cursor outline it at its true size
+  // before any of it shows.
   // ---------------------------------------------------------------------------
-  const input = document.getElementById('q'), built = document.getElementById('built'), form = document.getElementById('form');
+  const input = document.getElementById('q'), form = document.getElementById('form');
+  const built = document.getElementById('built'), crew = document.getElementById('crew');
+  const statusEl = document.getElementById('status'), skipBtn = document.getElementById('skip');
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let shown = null;
+  const CREW = 3;                 // most cursors working at once
+  const FLY = 340, DRAW = 460;    // ms to reach a block, and to drag its outline
 
-  function show(nodes) {
-    built.replaceChildren(...nodes);
-    nodes.forEach((n, i) => {
-      if (!n.classList.contains('block')) return;
-      if (reduce) n.classList.add('in');
-      else setTimeout(() => n.classList.add('in'), 40 + i * 70);
+  let run = 0;                    // goes up every time a new build starts
+  let jobs = [];                  // the blocks being built right now
+  let shown = 'empty';
+
+  function headBlock() {
+    const b = el('section', 'block');
+    b.append(el('h2', 'kp-title', WHO.name), el('p', 'kp-meta', WHO.meta));
+    return b;
+  }
+  function googleBlock(q) {
+    const b = el('section', 'block');
+    const line = el('p', null, "This box only knows about me. For everything else there's a bigger one.");
+    line.style.cssText = 'margin-top:10px;font-size:17px';
+    const link = el('a', 'btn primary', 'Search Google for "' + q + '"');
+    link.href = 'https://www.google.com/search?q=' + encodeURIComponent(q);
+    const p = el('p'); p.style.marginTop = '22px'; p.append(link);
+    b.append(el('h2', 'kp-title', 'Bro, go to Google.'), line, p);
+    return b;
+  }
+
+  function planFor(q) {
+    const hits = match(q);
+    if (!hits.length) {
+      return { blocks: [{ id: 'google:' + q, label: 'not about me', make: () => googleBlock(q) }], why: 'Nothing about Sage matched.' };
+    }
+    const blocks = [{ id: 'head', label: 'title', make: headBlock }];
+    hits.forEach((t) => t.build().forEach((node, i) => {
+      blocks.push({ id: t.id + ':' + i, label: node.querySelector('h3').textContent.toLowerCase(), make: () => node });
+    }));
+    return { blocks, why: 'Matched on: ' + hits.map((t) => t.label).join(', ') + '.' };
+  }
+
+  // ---- animation helpers ----
+  const ease = (t) => 1 - Math.pow(1 - t, 3);
+  // Runs fn from 0 to 1 over ms. Ends at once if the job is rushed, and stops if it's finished elsewhere.
+  function tween(ms, job, fn) {
+    return new Promise((resolve) => {
+      const t0 = performance.now();
+      const frame = (now) => {
+        if (job.done) { resolve(false); return; }
+        const t = job.rush ? 1 : Math.min(1, (now - t0) / ms);
+        fn(t);
+        if (t < 1) requestAnimationFrame(frame); else resolve(true);
+      };
+      requestAnimationFrame(frame);
     });
   }
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  // ---- typing: empty every piece of text in a block, then put it back a few letters at a time ----
+  function emptyText(block) {
+    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+    const parts = [];
+    let n;
+    while ((n = walker.nextNode())) if (n.nodeValue.trim()) parts.push({ node: n, text: n.nodeValue, shown: -1 });
+    parts.forEach((part) => { part.node.nodeValue = ''; part.shown = 0; });
+    return parts;
+  }
+  function typeTo(job, count) {
+    let before = 0;
+    for (const part of job.parts) {
+      const want = Math.max(0, Math.min(part.text.length, count - before));
+      if (want !== part.shown) { part.node.nodeValue = part.text.slice(0, want); part.shown = want; job.at = part; }
+      before += part.text.length;
+    }
+  }
+
+  // ---- finishing a block, whether its cursor got there or someone hurried it ----
+  function finish(job) {
+    if (job.done) return;
+    job.done = true;
+    if (job.parts) job.parts.forEach((part) => { part.node.nodeValue = part.text; });
+    job.node.style.minHeight = '';
+    job.node.classList.remove('pending', 'building');
+    if (job.wire) job.wire.remove();
+    report();
+  }
+
+  function report() {
+    if (!jobs.length) return;
+    const left = jobs.filter((j) => !j.done).length;
+    if (left) {
+      const n = Math.min(CREW, jobs.length);
+      statusEl.textContent = n + (n === 1 ? ' cursor' : ' cursors') + ' building. ' + (jobs.length - left) + ' of ' + jobs.length + (jobs.length === 1 ? ' block done.' : ' blocks done.');
+      skipBtn.hidden = false;
+    } else {
+      statusEl.textContent = 'Built ' + jobs.length + (jobs.length === 1 ? ' block. ' : ' blocks. ') + jobs.why;
+      skipBtn.hidden = true;
+      built.removeAttribute('aria-busy');
+    }
+  }
+
+  // ---- one cursor ----
+  function makeCursor(i) {
+    const c = el('div', 'cursor a' + (i + 1));
+    c.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20"><path d="M3 2l5.2 15 2.4-6.1L17 8.3z"/></svg>';
+    const cur = { el: c, x: 0, y: -40, i };
+    cur.move = (x, y) => { cur.x = x; cur.y = y; c.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)'; };
+    cur.move(40 + i * 46, -40);    // they set off from just under the search box
+    crew.append(c);
+    return cur;
+  }
+
+  async function buildBlock(cur, job) {
+    const node = job.node;
+    const x = node.offsetLeft, y = node.offsetTop, w = node.offsetWidth, h = node.offsetHeight;
+
+    // 1. fly to the block's top-left corner
+    const fx = cur.x, fy = cur.y;
+    if (!await tween(FLY, job, (t) => { const e = ease(t); cur.move(fx + (x - fx) * e, fy + (y - fy) * e); })) return;
+
+    // 2. drag out an outline at the block's real size. Tapping it hurries this cursor up.
+    const wire = el('button', 'wire a' + (cur.i + 1));
+    wire.type = 'button'; wire.tabIndex = -1;
+    wire.style.left = x + 'px'; wire.style.top = y + 'px';
+    const tag = el('span', 'tag');
+    wire.append(tag);
+    wire.addEventListener('click', () => { job.rush = true; });
+    job.wire = wire;
+    crew.insertBefore(wire, crew.firstChild);
+    if (!await tween(DRAW, job, (t) => {
+      const e = ease(t), cw = w * e, chh = h * e;
+      wire.style.width = cw + 'px'; wire.style.height = chh + 'px';
+      tag.textContent = job.label + ' · ' + Math.round(cw) + ' × ' + Math.round(chh);
+      cur.move(x + cw, y + chh);
+    })) return;
+
+    // 3. type the words in. The block is held at its final height so nothing below it moves.
+    node.style.minHeight = h + 'px';
+    job.parts = emptyText(node);
+    node.classList.remove('pending');
+    node.classList.add('building');
+    const total = job.parts.reduce((sum, part) => sum + part.text.length, 0);
+    const range = document.createRange();
+    let tick = 0;
+    if (!await tween(Math.max(450, Math.min(1300, total * 12)), job, (t) => {
+      typeTo(job, Math.round(total * t));
+      if (job.at && job.at.shown && (tick++ % 2 === 0)) {
+        range.selectNodeContents(job.at.node);
+        const rects = range.getClientRects(), r = rects[rects.length - 1];
+        if (r) { const b = built.getBoundingClientRect(); cur.move(r.right - b.left, r.bottom - b.top - 6); }
+      }
+    })) return;
+
+    finish(job);
+  }
+
+  async function runCursor(cur, queue, mine) {
+    await wait(cur.i * 140);
+    for (const job of queue) {
+      if (mine !== run) return;
+      if (!job.done) await buildBlock(cur, job);
+    }
+    if (mine !== run) return;
+    // nothing left: head back up and fade
+    const fx = cur.x, fy = cur.y, home = { done: false };
+    await tween(260, home, (t) => { const e = ease(t); cur.move(fx + (40 + cur.i * 46 - fx) * e, fy + (-40 - fy) * e); cur.el.style.opacity = String(1 - e); });
+    if (mine === run) cur.el.remove();
+  }
+
+  function build(plan) {
+    run++;
+    const mine = run;
+    // Whatever was mid-build gets finished on the spot, so the page is whole before it changes again.
+    jobs.forEach(finish);
+    jobs = [];
+    crew.replaceChildren();
+
+    const wanted = new Set(plan.blocks.map((b) => b.id));
+    [...built.children].forEach((n) => { if (n !== crew && !wanted.has(n.dataset.id)) n.remove(); });
+    const have = new Map([...built.children].filter((n) => n !== crew).map((n) => [n.dataset.id, n]));
+
+    const fresh = [];
+    plan.blocks.forEach((b) => {
+      let node = have.get(b.id);
+      if (!node) {
+        node = b.make();
+        node.dataset.id = b.id;
+        if (!reduce) node.classList.add('pending');
+        fresh.push({ node, label: b.label, done: reduce, rush: false });
+      }
+      built.insertBefore(node, crew);     // also puts kept blocks in their new order
+    });
+
+    if (!plan.blocks.length) {
+      built.insertBefore(el('p', 'empty', 'Nothing here yet. The page shows up when you ask for it.'), crew);
+      statusEl.textContent = ''; skipBtn.hidden = true;
+      return;
+    }
+    if (reduce || !fresh.length) {
+      statusEl.textContent = (fresh.length ? 'Built ' + fresh.length + (fresh.length === 1 ? ' block. ' : ' blocks. ') : 'Nothing new to build. ') + plan.why;
+      skipBtn.hidden = true;
+      return;
+    }
+
+    jobs = fresh;
+    jobs.why = plan.why;
+    built.setAttribute('aria-busy', 'true');
+    report();
+    const n = Math.min(CREW, jobs.length);
+    for (let i = 0; i < n; i++) runCursor(makeCursor(i), jobs.filter((_, k) => k % n === i), mine);
+  }
+
+  skipBtn.addEventListener('click', () => { jobs.forEach(finish); crew.replaceChildren(); });
 
   function render(raw) {
     const q = raw.trim();
-    const hits = q ? match(q) : [];
-    const key = q ? (hits.length ? hits.map((t) => t.id).join('+') : 'google:' + q) : 'empty';
-    if (key === shown) return;       // same page as before, leave it alone while they keep typing
+    const plan = q ? planFor(q) : { blocks: [], why: '' };
+    const key = plan.blocks.map((b) => b.id).join('+') || 'empty';
+    if (key === shown) return;        // same page as before, leave the crew alone while they keep typing
     shown = key;
-
-    if (!q) {
-      show([el('p', 'empty', 'Nothing here yet. The page shows up when you ask for it.')]);
-      return;
-    }
-    if (!hits.length) {
-      const b = el('section', 'block');
-      const link = el('a', 'btn primary', 'Search Google for "' + q + '"');
-      link.href = 'https://www.google.com/search?q=' + encodeURIComponent(q);
-      const p = el('p'); p.style.marginTop = '22px'; p.append(link);
-      const line = el('p', null, "This box only knows about me. For everything else there's a bigger one.");
-      line.style.cssText = 'margin-top:10px;font-size:17px';
-      b.append(el('h2', 'kp-title', 'Bro, go to Google.'), line, p);
-      show([b]);
-      return;
-    }
-    const head = el('section', 'block');
-    head.append(el('h2', 'kp-title', WHO.name), el('p', 'kp-meta', WHO.meta));
-    const nodes = [head];
-    hits.forEach((t) => nodes.push(...t.build()));
-    nodes.push(el('p', 'why', 'Matched on: ' + hits.map((t) => t.label).join(', ')));
-    show(nodes);
+    build(plan);
   }
 
   function syncUrl(q) {
@@ -397,15 +598,29 @@
       history.replaceState(null, '', url);
     } catch (_) {}
   }
+  // If the results are low on the screen (a phone, mostly), bring the box to the top so the build is in view.
+  function makeRoom() {
+    if (built.getBoundingClientRect().top < window.innerHeight * 0.5) return;
+    const y = form.getBoundingClientRect().top + window.scrollY - 12;
+    window.scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' });
+  }
 
   let timer = 0;
   input.addEventListener('input', () => {
     clearTimeout(timer);
-    timer = setTimeout(() => { render(input.value); syncUrl(input.value); }, 140);
+    timer = setTimeout(() => { render(input.value); syncUrl(input.value); }, 450);
   });
-  form.addEventListener('submit', (e) => { e.preventDefault(); clearTimeout(timer); render(input.value); syncUrl(input.value); });
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    clearTimeout(timer);
+    input.blur();                     // drops the phone keyboard so the build isn't hidden behind it
+    makeRoom();
+    render(input.value); syncUrl(input.value);
+  });
   form.querySelectorAll('[data-try]').forEach((b) => b.addEventListener('click', () => {
+    clearTimeout(timer);
     input.value = b.dataset.try;
+    makeRoom();
     render(input.value); syncUrl(input.value);
   }));
 

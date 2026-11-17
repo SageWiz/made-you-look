@@ -197,10 +197,35 @@ footer.site nav{display:flex;flex-wrap:wrap;gap:6px 20px}
 .askbox input::placeholder{color:var(--muted);opacity:1}
 .tries{margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 .tries .btn{min-height:44px;padding:0 14px;font-size:15px}
-.built{margin-top:28px;border-top:1px solid var(--line-strong);padding-top:24px;max-width:760px;min-height:300px}
-.built .block{margin-top:28px;opacity:0;transform:translateY(6px);transition:opacity .2s ease,transform .2s ease}
+.crewbar{margin-top:20px;max-width:760px;min-height:44px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;font-size:14px;color:var(--muted)}
+.crewbar .btn{min-height:44px;padding:0 14px;font-size:15px}
+.built{position:relative;margin-top:8px;border-top:1px solid var(--line-strong);padding-top:28px;max-width:760px;min-height:300px}
+.built .block{margin-top:28px}
 .built .block:first-child{margin-top:0}
-.built .block.in{opacity:1;transform:none}
+/* A block waiting for its cursor takes up its space but shows nothing. */
+.built .block.pending{visibility:hidden}
+/* While it's being typed, hold back the fills and rules so only the words are arriving. */
+.built .tile{transition:background-color .25s ease}
+.built .rows > *{transition:border-color .25s ease}
+.built .block.building .tile{background-color:transparent}
+.built .block.building .rows > *{border-color:transparent}
+.built .block.building .status::before{opacity:0}
+.built .block.building .btn.primary{background:transparent;color:var(--ink)}
+/* The cursors and their outlines live in a layer over the page. */
+.crew{position:absolute;inset:0;pointer-events:none;z-index:2}
+.crew .a1{--agent:#8a5a00;--agent-ink:#f3ecdc}
+.crew .a2{--agent:#2a3a74;--agent-ink:#f3ecdc}
+.crew .a3{--agent:#7a5330;--agent-ink:#f3ecdc}
+@media (prefers-color-scheme:dark){
+  .crew .a1{--agent:#e8a917;--agent-ink:#1b2029}
+  .crew .a2{--agent:#9db0f0;--agent-ink:#1b2029}
+  .crew .a3{--agent:#d0a57a;--agent-ink:#1b2029}
+}
+.cursor{position:absolute;left:0;top:0;width:20px;height:20px;margin:-2px 0 0 -3px;will-change:transform}
+.cursor svg{display:block;overflow:visible}
+.cursor path{fill:var(--agent);stroke:var(--bg);stroke-width:1.5;stroke-linejoin:round}
+.wire{position:absolute;width:0;height:0;padding:0;margin:0;font:inherit;border:1.5px dashed var(--agent);border-radius:2px;background:color-mix(in srgb,var(--agent) 7%,transparent);pointer-events:auto;cursor:pointer}
+.wire .tag{position:absolute;left:-1.5px;bottom:100%;margin-bottom:2px;padding:1px 6px;border-radius:2px;background:var(--agent);color:var(--agent-ink);font-size:12px;line-height:1.4;white-space:nowrap;font-variant-numeric:tabular-nums}
 .kp-title{font-size:clamp(36px,5vw,44px);line-height:1.05;font-weight:750;font-stretch:76%}
 .kp-meta{margin-top:6px;font-size:17px;color:var(--muted)}
 .built h3{font-size:15px;font-weight:600;color:var(--muted)}
@@ -217,7 +242,6 @@ footer.site nav{display:flex;flex-wrap:wrap;gap:6px 20px}
 .tile h4{margin:0;font-size:24px;line-height:1.15;font-weight:700;font-stretch:86%}
 .tile p{margin-top:8px;color:var(--muted)}
 .tile p.go{color:inherit;font-weight:500}
-.why{margin-top:28px;font-size:14px;color:var(--muted)}
 .built .empty{color:var(--muted);font-size:17px}
 
 @media (max-width:640px){
