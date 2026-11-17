@@ -34,7 +34,7 @@ Then visit http://localhost:8000/
 
 ## Things you'll want to edit
 
-- **02 photos.** In `scroll-through-places/index.html`, each `.stop` holds a stand-in room. Swap the `.room` for an `<img>` and rewrite the caption. The comment above the section shows the markup.
+- **02 photos.** Each stop in `scroll-through-places/index.html` is one picture with a wide file and a tall file (`room-1-wide.webp`, `room-1-tall.webp`, and so on). Replace those files with your photos, fill in the `alt`, and rewrite the caption. The comment above the section has the details.
 - **03 photo.** Replace `portrait-reveal/portrait.jpg` with any square photo and update the `alt` text on the `<img>`.
 - **04 facts.** Everything the search box knows is the `TOPICS` list at the top of the script in `search-builds-the-page/index.html`.
 - **Verdicts and measurements.** Each page has a "What it costs" table and a "Would I ship it?" section waiting for real numbers.

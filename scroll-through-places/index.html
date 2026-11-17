@@ -34,20 +34,21 @@
 </div>
 
 <!--
-  Each .stop is one place. To use a real photo, replace the .room inside its .plate with
-  <img src="your-photo.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
-  and rewrite the caption. Add or remove stops freely; the script counts them.
+  Each .stop is one place, and each place is one flat picture.
+  To use a real photo: replace the two files named in that stop's <picture> (a wide one for
+  landscape screens, a tall one for phones), describe it in the img's alt, and rewrite the caption.
+  One file is fine too: delete the <source> line and it gets cropped to fit.
+  Add or remove stops freely. The script counts them.
 -->
 <section class="trip" id="trip" aria-label="The trip">
   <div class="trip-view">
 
     <figure class="stop">
-      <div class="plate" aria-hidden="true">
-        <div class="room">
-          <div class="pl back"></div><div class="pl left"></div><div class="pl right"></div><div class="pl floor"></div><div class="pl ceil"></div>
-          <div class="dot" style="left:16%;top:30%;transform:translateZ(calc(var(--d) * -.5))"></div>
-          <div class="dot cream" style="left:76%;top:58%;transform:translateZ(calc(var(--d) * -.25))"></div>
-        </div>
+      <div class="plate">
+        <picture>
+          <source media="(orientation: portrait)" srcset="./room-1-tall.webp">
+          <img src="./room-1-wide.webp" width="1920" height="1200" alt="" decoding="async">
+        </picture>
       </div>
       <figcaption>
         <p class="small">Stop 1 of 3</p>
@@ -57,12 +58,11 @@
     </figure>
 
     <figure class="stop">
-      <div class="plate" aria-hidden="true">
-        <div class="room oak">
-          <div class="pl back"></div><div class="pl left"></div><div class="pl right"></div><div class="pl floor"></div><div class="pl ceil"></div>
-          <div class="dot cream" style="left:20%;top:60%;transform:translateZ(calc(var(--d) * -.4))"></div>
-          <div class="dot cream" style="left:72%;top:26%;transform:translateZ(calc(var(--d) * -.2))"></div>
-        </div>
+      <div class="plate">
+        <picture>
+          <source media="(orientation: portrait)" srcset="./room-2-tall.webp">
+          <img src="./room-2-wide.webp" width="1920" height="1200" alt="" decoding="async">
+        </picture>
       </div>
       <figcaption>
         <p class="small">Stop 2 of 3</p>
@@ -72,12 +72,11 @@
     </figure>
 
     <figure class="stop">
-      <div class="plate" aria-hidden="true">
-        <div class="room moss">
-          <div class="pl back"></div><div class="pl left"></div><div class="pl right"></div><div class="pl floor"></div><div class="pl ceil"></div>
-          <div class="dot" style="left:30%;top:34%;transform:translateZ(calc(var(--d) * -.55))"></div>
-          <div class="dot cream" style="left:64%;top:56%;transform:translateZ(calc(var(--d) * -.3))"></div>
-        </div>
+      <div class="plate">
+        <picture>
+          <source media="(orientation: portrait)" srcset="./room-3-tall.webp">
+          <img src="./room-3-wide.webp" width="1920" height="1200" alt="" decoding="async">
+        </picture>
       </div>
       <figcaption>
         <p class="small">Stop 3 of 3</p>
@@ -99,8 +98,8 @@
 
       <section aria-labelledby="how">
         <h2 id="how">How it works</h2>
-        <p>Every place is a full-screen layer. The one you're in scales up as you scroll, and the next one sits in the middle of it at 30% size, growing at the same rate. When the small one reaches full size it becomes the one you're in. One number ties those scales together, so there's no jump at the handoff.</p>
-        <p>It runs on the browser's own scrolling. The section is very tall and the view sticks to the top of the window while you pass through. Your scrollbar, keyboard, trackpad and thumb all work the way they always do.</p>
+        <p>Every place is a full-screen layer. The one you're in grows as you scroll, and the next one sits in the middle of it at 30% size, growing at the same rate. When the small one reaches full size it becomes the one you're in. Every layer follows the same curve, just offset, so the zoom keeps one steady speed straight through each handoff.</p>
+        <p>It runs on the browser's own scrolling. The section is very tall and the view sticks to the top of the window while you pass through. Your scrollbar, keyboard, trackpad and thumb all work the way they always do. Where the browser supports it, the zoom is tied directly to the scroll position and never passes through a script, which is what keeps it from stuttering on a phone.</p>
       </section>
 
       <section aria-labelledby="cost">
@@ -152,9 +151,11 @@
         <dt>Scrolling</dt>
         <dd>The browser's own, plus a sticky view. No scroll library.</dd>
         <dt>Zoom</dt>
-        <dd>Each layer is scaled by a power of 0.3, so any number of stops nest without a seam</dd>
+        <dd>Layer number n is scaled to 0.3 to the power of n minus how far you've scrolled. One formula, any number of stops, no seam.</dd>
+        <dt>Smoothness</dt>
+        <dd>A scroll-driven animation where the browser has them, so the zoom runs off the main thread. A script does the same job in older browsers.</dd>
         <dt>Scenes</dt>
-        <dd>Felt rooms for now, then my own photos</dd>
+        <dd>Pictures of felt rooms for now, then my own photos</dd>
         <dt>Seen in</dt>
         <dd>Dominik Fojcik's portfolio, which flies a camera through full 3D scenes as you scroll</dd>
         <dt>Code</dt>
@@ -184,46 +185,96 @@
   const view = trip.querySelector('.trip-view');
   const stops = [...trip.querySelectorAll('.stop')];
   const plates = stops.map((s) => s.querySelector('.plate'));
+  const captions = stops.map((s) => s.querySelector('figcaption'));
   const bar = document.getElementById('bar'), hint = document.getElementById('hint');
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
   const n = stops.length;
 
   // The next place sits inside the current one at this fraction of its size.
   const DOOR = 0.3;
-  const PUSH = 1 / DOOR - 1;   // how far the current place has to grow for the door to fill the screen
-  let queued = false;
+  const RATE = Math.log(1 / DOOR);   // how much zoom one stop's worth of scrolling adds
 
+  // Where every layer is, for a position P along the trip (0 = start of stop 1, n = the very end).
+  // Layer j is DOOR^(j - P): it's the door-sized picture when you're one stop away and full size
+  // when you arrive. Because it's one curve, the zoom never changes speed at a handoff.
+  function scaleAt(j, P) {
+    if (j === n - 1 && P > j) {
+      // The last place has nothing inside it, so it eases to a stop instead of zooming on.
+      return Math.exp((RATE / 4) * (1 - Math.exp(-4 * (P - j))));
+    }
+    return Math.pow(DOOR, j - Math.min(P, j + 1));
+  }
+
+  // ---- preferred: let the browser tie the zoom to the scroll position itself ----
+  let anims = [];
+  function startNative() {
+    const timeline = new ViewTimeline({ subject: trip, axis: 'block' });
+    // "contain" runs from the moment the section's top reaches the top of the screen
+    // to the moment its bottom reaches the bottom: exactly the stretch where the view is stuck.
+    const opts = { timeline, rangeStart: 'contain 0%', rangeEnd: 'contain 100%', fill: 'both', easing: 'linear' };
+    const STEPS = 10;   // straight-line pieces per stop; plenty to follow the curve
+    plates.forEach((plate, j) => {
+      const frames = [];
+      for (let k = 0; k <= n * STEPS; k++) {
+        const P = k / STEPS;
+        frames.push({ offset: P / n, transform: 'scale(' + scaleAt(j, P).toFixed(5) + ')', opacity: 1 });
+      }
+      // Once the next place has covered this one, drop it so it isn't drawn for nothing.
+      if (j < n - 1) {
+        const gone = (j + 1) / n;
+        frames.forEach((f) => { if (f.offset > gone + 1e-6) f.opacity = 0; });
+      }
+      anims.push(plate.animate(frames, opts));
+    });
+    captions.forEach((cap, j) => {
+      const a = j / n, b = (j + 1) / n, e = 0.004;
+      const frames = [];
+      if (j > 0) frames.push({ offset: 0, opacity: 0 }, { offset: a - e, opacity: 0 });
+      frames.push({ offset: a, opacity: 1 });
+      if (j < n - 1) frames.push({ offset: b - e, opacity: 1 }, { offset: b, opacity: 0 }, { offset: 1, opacity: 0 });
+      else frames.push({ offset: 1, opacity: 1 });
+      anims.push(cap.animate(frames, opts));
+    });
+    anims.push(bar.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], opts));
+    anims.push(hint.animate([{ offset: 0, opacity: 1 }, { offset: 0.02, opacity: 0 }, { offset: 1, opacity: 0 }], opts));
+  }
+  function stopNative() { anims.forEach((a) => a.cancel()); anims = []; }
+
+  // ---- fallback: the same positions, set from a scroll listener ----
+  let queued = false;
   function update() {
     queued = false;
-    if (!trip.classList.contains('live')) return;
+    if (!trip.classList.contains('scripted')) return;
     const r = trip.getBoundingClientRect();
     const span = r.height - view.offsetHeight;
     const p = span > 0 ? Math.max(0, Math.min(1, -r.top / span)) : 0;
-    const P = Math.min(p * n, n - 0.0001);
-    const i = Math.floor(P), u = P - i;
-    const last = i === n - 1;
+    const P = p * n, i = Math.min(n - 1, Math.floor(P));
     plates.forEach((plate, j) => {
-      if (j < i) { plate.style.visibility = 'hidden'; return; }
-      // Stop i is at 1..1/DOOR. Each later stop is DOOR times the one before it.
-      const s = last ? 1 + u * 0.12 : Math.pow(DOOR, j - i) * (1 + PUSH * u);
-      plate.style.visibility = 'visible';
-      plate.style.transform = 'scale(' + s.toFixed(5) + ')';
-      plate.style.setProperty('--s', s.toFixed(5));
-      plate.style.setProperty('--frame', j > i ? '1' : '0');
-      plate.style.zIndex = String(j);
+      plate.style.transform = 'scale(' + scaleAt(j, P).toFixed(5) + ')';
+      plate.style.opacity = j < i ? '0' : '1';
     });
-    stops.forEach((s, j) => s.classList.toggle('on', j === i));
+    captions.forEach((cap, j) => { cap.style.opacity = j === i ? '1' : '0'; });
     bar.style.transform = 'scaleX(' + p.toFixed(4) + ')';
-    hint.classList.toggle('gone', p > 0.02);
+    hint.style.opacity = p > 0.02 ? '0' : '1';
   }
   function queue() { if (!queued) { queued = true; requestAnimationFrame(update); } }
 
+  function clearInline() {
+    plates.forEach((el) => { el.style.transform = ''; el.style.opacity = ''; });
+    captions.forEach((el) => { el.style.opacity = ''; });
+    bar.style.transform = ''; hint.style.opacity = '';
+  }
+
   function setMode() {
+    stopNative();
+    clearInline();
     const live = !reduce.matches;
+    const native = live && typeof ViewTimeline === 'function';
     trip.classList.toggle('live', live);
-    if (!live) {
-      plates.forEach((plate) => { plate.removeAttribute('style'); });
-      stops.forEach((s) => s.classList.remove('on'));
+    trip.classList.toggle('scripted', live && !native);
+    if (native) {
+      try { startNative(); }
+      catch (_) { stopNative(); trip.classList.add('scripted'); }
     }
     queue();
   }

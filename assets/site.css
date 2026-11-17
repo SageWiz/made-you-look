@@ -154,24 +154,28 @@ footer.site nav{display:flex;flex-wrap:wrap;gap:6px 20px}
 /* Without JS, or with reduced motion, the stops are a plain stack. */
 .trip{margin-top:20px}
 .trip .stop{position:relative;margin:0 0 20px}
-.trip .plate{height:min(70vh,560px)}
-.trip .plate .room{height:100%;--d:max(60vw,60vh);--oy:50%;border-radius:0}
+.trip .plate{height:min(70vh,560px);background:#131a36}
+.trip .plate picture,.trip .plate img{display:block;width:100%;height:100%}
+.trip .plate img{object-fit:cover}
 .trip figcaption{background:var(--letter);color:var(--panel-ink);padding:18px 20px}
 .trip figcaption .small{color:#59626e}
 .trip figcaption h3{margin-top:2px;font-size:24px;line-height:1.15;font-weight:700;font-stretch:86%}
 .trip figcaption p + p{margin-top:6px;font-size:15px}
 .trip-hint,.trip-bar{display:none}
-/* With JS and motion allowed, the section gets tall and the view sticks while you pass through. */
-.trip.live{height:430vh;height:calc(100svh * 4.3);margin-top:20px}
-.trip.live .trip-view{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:#0c1022}
+/* With JS and motion allowed, the section gets tall and the view sticks while you pass through.
+   The view is as tall as the screen ever gets (lvh), so nothing shows underneath it when a phone's
+   address bar slides away. Captions are placed against the smallest screen (svh) so they're never cut off. */
+.trip.live{height:430vh;height:calc(100lvh * 4.3);margin-top:20px}
+.trip.live .trip-view{position:sticky;top:0;height:100vh;height:100lvh;overflow:hidden;background:#0c1022;contain:paint}
 .trip.live .stop{position:absolute;inset:0;margin:0}
-.trip.live .plate{position:absolute;inset:0;height:auto;transform-origin:50% 50%;will-change:transform}
-.trip.live .plate::after{content:"";position:absolute;inset:0;border:calc(2px / var(--s,1)) solid var(--letter);opacity:var(--frame,0);pointer-events:none}
-.trip.live figcaption{position:absolute;left:24px;bottom:28px;z-index:50;width:min(380px,calc(100% - 48px));border-radius:3px;opacity:0;visibility:hidden;transition:opacity .15s ease,visibility .15s}
-.trip.live .stop.on figcaption{opacity:1;visibility:visible}
-.trip.live .trip-hint{display:block;position:absolute;left:24px;top:20px;z-index:50;background:var(--letter);color:var(--panel-ink);border-radius:3px;padding:6px 12px;font-size:14px;transition:opacity .2s}
-.trip.live .trip-hint.gone{opacity:0}
-.trip.live .trip-bar{display:block;position:absolute;left:0;right:0;bottom:0;height:4px;z-index:50;background:var(--marigold);transform-origin:left center;transform:scaleX(0)}
+/* Each plate is one flat picture on its own layer. The cream outline is the door frame:
+   it scales with the plate, so it's a thin line when the place is far off and slides
+   out past the edge of the screen as you arrive. */
+.trip.live .plate{position:absolute;inset:0;height:auto;transform-origin:50% 50%;will-change:transform,opacity;outline:6px solid var(--letter);backface-visibility:hidden}
+.trip.live figcaption{position:absolute;left:24px;bottom:28px;bottom:calc(100lvh - 100svh + 28px);z-index:50;width:min(380px,calc(100% - 48px));border-radius:3px;opacity:0}
+.trip.live .stop:first-of-type figcaption{opacity:1}
+.trip.live .trip-hint{display:block;position:absolute;left:24px;top:22px;z-index:50;background:var(--letter);color:var(--panel-ink);border-radius:3px;padding:6px 12px;font-size:14px}
+.trip.live .trip-bar{display:block;position:absolute;left:0;right:0;top:0;height:4px;z-index:50;background:var(--marigold);transform-origin:left center;transform:scaleX(0);will-change:transform}
 
 /* ---- 03 portrait reveal ---- */
 .reveal-wrap{margin-top:36px;display:flex;flex-wrap:wrap;gap:28px 48px;align-items:flex-start}
@@ -258,7 +262,7 @@ footer.site nav{display:flex;flex-wrap:wrap;gap:6px 20px}
   .costs dd.measured{font-size:15px}
 }
 @media (max-width:640px){
-  .trip.live figcaption{left:12px;bottom:20px;width:calc(100% - 24px)}
+  .trip.live figcaption{left:12px;bottom:20px;bottom:calc(100lvh - 100svh + 20px);width:calc(100% - 24px)}
   .trip.live .trip-hint{left:12px}
 }
 @media (prefers-reduced-motion:reduce){
