@@ -315,14 +315,14 @@
     if (e.gamma == null || e.beta == null) return;
     tiltSeen = true;
     const pose = tiltPose(e.beta, e.gamma, screenAngle());
-    if (!tiltBase) tiltBase = pose;          // however you're holding it right now counts as centre
+    if (!tiltBase) tiltBase = pose;          // however you're holding it right now counts as center
     let dp = pose.pitch - tiltBase.pitch;
     if (dp > Math.PI) dp -= 2 * Math.PI; else if (dp < -Math.PI) dp += 2 * Math.PI;
     aim((pose.lean - tiltBase.lean) / LEAN_RANGE, dp / PITCH_RANGE);
   }
   function recenterTilt() { tiltBase = null; }
   function stopTilt() { window.removeEventListener('deviceorientation', onTilt); }
-  // Turning the phone to landscape changes what "level" means, so start from centre again.
+  // Turning the phone to landscape changes what "level" means, so start from the center again.
   window.addEventListener('orientationchange', recenterTilt);
 
   async function startTilt() {
@@ -364,7 +364,7 @@
     chip.hidden = mode === 'ask';
     if (mode === 'mouse') setChip('Steering with the mouse', false, 'Try the camera', startCamera);
     else if (mode === 'touch') setChip('Drag to look around', false, 'Try tilt', startTilt);
-    else if (mode === 'tilt') setChip('Steering by tilt. Tap the room to re-centre.', false, 'Stop', () => { stopTilt(); mode = 'touch'; render(); });
+    else if (mode === 'tilt') setChip('Steering by tilt. Tap the room to re-center.', false, 'Stop', () => { stopTilt(); mode = 'touch'; render(); });
     else if (mode === 'starting') setChip('Starting the camera…', false, 'Cancel', () => { stopCamera(); mode = coarse ? 'touch' : 'mouse'; render(); });
     else if (mode === 'camera' && lost) setChip("Can't see your face. Holding this view.", false, coarse ? 'Switch to finger' : 'Switch to mouse', () => { stopCamera(); mode = coarse ? 'touch' : 'mouse'; render(); });
     else if (mode === 'camera') setChip('Camera on', true, 'Turn camera off', () => { stopCamera(); mode = coarse ? 'touch' : 'mouse'; render(); });
