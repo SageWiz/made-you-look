@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Made You Look</title>
+<meta name="description" content="A deep dive into the UX and UI that grabs people's attention. Sage rebuilds the interesting part and asks whether he'd ship it.">
+<meta property="og:title" content="Made You Look">
+<meta property="og:description" content="A deep dive into the UX and UI that grabs people's attention.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%232a3a74'/><text x='16' y='23' font-family='Arial' font-weight='700' font-size='20' text-anchor='middle' fill='%23f3ecdc'>S</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/site.css">
+</head>
+<body>
+<div class="page">
+
+  <nav class="topnav" aria-label="Site">
+    <a href="https://hellasage.com">Hella Sage</a>
+    <div>
+      <a href="https://github.com/SageWiz/made-you-look">Code on GitHub</a>
+      <a href="https://sejulphanord.com">sejulphanord.com</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <h1>Made You Look</h1>
+    <div class="lede">
+      <p>A deep dive into the UX and UI that grabs people's attention. I keep saving websites that made me stop scrolling, then I rebuild the interesting part and write down what it would cost to put in front of real users.</p>
+      <p>Every entry ends on the same question: would I ship it?</p>
+    </div>
+  </header>
+
+  <main>
+
+    <!--
+      To add an experiment:
+      1. Copy the head-tracked-window folder, rename it, and build the page.
+      2. When it's live, move its row out of "In the queue" and give it a block like the one below.
+      Status: plain "status" for things you can open, "status quiet" for anything not built yet.
+    -->
+
+    <section class="first" aria-labelledby="x01">
+      <a class="shot" href="./head-tracked-window/" aria-label="Open experiment 01, Head-tracked window">
+        <div class="room preview" aria-hidden="true">
+          <div class="pl back"></div>
+          <div class="pl left"></div>
+          <div class="pl right"></div>
+          <div class="pl floor"></div>
+          <div class="pl ceil"></div>
+          <div class="dot" style="left:30%;top:46%;transform:translateZ(calc(var(--d) * -.68))"></div>
+          <div class="dot cream" style="left:62%;top:30%;transform:translateZ(calc(var(--d) * -.34))"></div>
+          <div class="dot" style="left:52%;top:62%;transform:translateZ(calc(var(--d) * -.07))"></div>
+        </div>
+      </a>
+      <div class="body">
+        <div class="meta">
+          <span class="num">01</span>
+          <span class="status">First build is up</span>
+        </div>
+        <h2 id="x01">Head-tracked window</h2>
+        <p>The screen acts like a pane of glass. Your webcam follows your head, and the room behind the glass shifts the way a real one would. Say no to the camera and your mouse does the same job.</p>
+        <p class="muted">Seen in a reel by Dominik Fojcik, who did it with a 3D capture of a real corridor.</p>
+        <div class="go">
+          <a class="btn primary" href="./head-tracked-window/">Open the experiment</a>
+          <span class="muted" style="font-size:15px">Verdict: none yet</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="queue" aria-labelledby="queue">
+      <h2 id="queue">In the queue</h2>
+
+      <article class="entry">
+        <span class="num">02</span>
+        <div class="body">
+          <h3>Scroll through places</h3>
+          <p>One long scroll that moves a camera through a few real locations, with the work pinned to where it happened. The reference does it with full 3D scenes. I want to see how far photos get me.</p>
+        </div>
+        <span class="status quiet">Queued</span>
+      </article>
+
+      <article class="entry">
+        <span class="num">03</span>
+        <div class="body">
+          <h3>Portrait reveal</h3>
+          <p>A photo that starts as a grid of characters and turns into the real picture as you drag across it. I built an ASCII version for my old portfolio, so this one mostly needs the write-up.</p>
+        </div>
+        <span class="status quiet">Built, write-up pending</span>
+      </article>
+
+      <article class="entry">
+        <span class="num">04</span>
+        <div class="body">
+          <h3>Search box that builds the page</h3>
+          <p>You type what you want to know and the page puts itself together from the answer. The query has to do real work, so no canned typing animations.</p>
+        </div>
+        <span class="status quiet">Queued</span>
+      </article>
+    </section>
+
+  </main>
+
+  <footer class="site">
+    <span>Made by Sage in South Florida</span>
+    <nav aria-label="Elsewhere">
+      <a href="https://www.instagram.com/hellasage/">Instagram</a>
+      <a href="https://github.com/sagewiz">GitHub</a>
+      <a href="https://sejulphanord.com">sejulphanord.com</a>
+    </nav>
+  </footer>
+
+</div>
+</body>
+</html>

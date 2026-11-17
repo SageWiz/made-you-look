@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Head-tracked window | Made You Look</title>
+<meta name="description" content="The screen acts like a pane of glass. Move your head and the room behind it shifts the way a real one would.">
+<meta property="og:title" content="Head-tracked window | Made You Look">
+<meta property="og:description" content="The screen acts like a pane of glass. Move your head and the room behind it shifts.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%232a3a74'/><text x='16' y='23' font-family='Arial' font-weight='700' font-size='20' text-anchor='middle' fill='%23f3ecdc'>S</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="page">
+
+  <nav class="topnav" aria-label="Site">
+    <a href="../">Made You Look</a>
+    <a href="https://hellasage.com">Hella Sage</a>
+  </nav>
+
+  <header class="xhead">
+    <div class="meta">
+      <span class="num">01</span>
+      <span class="status">First build is up</span>
+    </div>
+    <h1>Head-tracked window</h1>
+    <p class="lede">The screen acts like a pane of glass. Move your head and the room behind it shifts the way a real one would.</p>
+  </header>
+
+  <section class="stage" aria-label="Live demo">
+    <div class="room" id="room" tabindex="0" role="group" aria-label="A room drawn in perspective. Arrow keys look around.">
+      <div class="pl back" aria-hidden="true"></div>
+      <div class="pl left" aria-hidden="true"></div>
+      <div class="pl right" aria-hidden="true"></div>
+      <div class="pl floor" aria-hidden="true"></div>
+      <div class="pl ceil" aria-hidden="true"></div>
+      <div class="dot" aria-hidden="true" style="left:24%;top:40%;transform:translateZ(calc(var(--d) * -.72))"></div>
+      <div class="dot cream" aria-hidden="true" style="left:66%;top:24%;transform:translateZ(calc(var(--d) * -.39))"></div>
+      <div class="dot" aria-hidden="true" style="left:44%;top:58%;transform:translateZ(calc(var(--d) * -.19))"></div>
+      <div class="dot cream" aria-hidden="true" style="left:78%;top:62%;transform:translateZ(calc(var(--d) * -.03))"></div>
+    </div>
+
+    <!-- Our own ask comes before the browser's prompt. The room already moves behind it. -->
+    <div class="ask" id="ask" role="group" aria-labelledby="ask-h" hidden>
+      <h2 id="ask-h">Steer with your head?</h2>
+      <p id="ask-p">Your browser will ask for the camera next. The video is read in this tab to find your face. It isn't uploaded, saved, or shown to anyone.</p>
+      <div class="row">
+        <button type="button" class="btn primary" id="ask-yes">Use my camera</button>
+        <button type="button" class="btn ghost" id="ask-no">Use the mouse instead</button>
+      </div>
+      <p class="alt" id="ask-alt" hidden><button type="button" id="ask-cam">Or use the front camera</button></p>
+    </div>
+
+    <div class="chip" id="chip" hidden>
+      <span class="live" id="chip-text" role="status"></span>
+      <button type="button" class="btn ghost" id="chip-btn"></button>
+    </div>
+  </section>
+  <p class="stage-note" id="note" aria-live="polite"></p>
+  <p class="muted small">Placeholder room. The real one will be a 3D capture of somewhere I've actually stood.</p>
+
+  <div class="cols">
+    <main>
+
+      <section aria-labelledby="how">
+        <h2 id="how">How it works</h2>
+        <p>A face-tracking model runs in the browser and reports where your eyes are about thirty times a second. That position gets treated as the spot you're looking from, and the view is skewed to match it. Lean left and you see more of the right wall, the same as leaning at a real window.</p>
+        <p>Without a camera, the mouse or the tilt of your phone supplies the position. It's the same effect with a less magic input.</p>
+      </section>
+
+      <section aria-labelledby="cost">
+        <h2 id="cost">What it costs</h2>
+        <p class="muted">Numbers go in once I've run it on more than my own laptop.</p>
+        <div class="costs">
+          <div class="head" aria-hidden="true"><span>Cost</span><span>What I already know</span><span>Measured</span></div>
+          <dl>
+            <div>
+              <dt>Camera prompt</dt>
+              <dd>The most-liked comment under the original was someone saying they'd click No. The page has to be worth looking at before anyone says yes.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>Download</dt>
+              <dd>The face model only downloads if you pick the camera. A real 3D scene will add a second, heavier file.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>Older laptops</dt>
+              <dd>Tracking and drawing both want the graphics chip at once.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>Phones</dt>
+              <dd>Tilt is the natural input there. iPhones ask permission for motion too, so it's one tap either way.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+            <div>
+              <dt>People who can't use it</dt>
+              <dd>The text lives in the page, so screen readers skip the room and lose nothing. Reduced-motion settings get a still picture and a play button. Arrow keys steer when the room has focus.</dd>
+              <dd class="measured">Not measured yet</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="verdict" aria-labelledby="verdict">
+        <h2 id="verdict" class="label">Would I ship it?</h2>
+        <p class="big">No verdict yet</p>
+        <p>This fills in after a few people have used it on their own machines. It'll say where I'd put this in a real product, where I wouldn't, and what the fallback has to be.</p>
+      </section>
+
+    </main>
+
+    <aside aria-labelledby="plan">
+      <h2 id="plan" class="label">Build notes</h2>
+      <dl class="plan">
+        <dt>Tracking</dt>
+        <dd>MediaPipe Face Landmarker, running in the browser</dd>
+        <dt>Drawing</dt>
+        <dd>CSS 3D for this grid room. Three.js once there's a real scene to show.</dd>
+        <dt>Scene</dt>
+        <dd>Grid room for now, then a Gaussian splat I capture myself</dd>
+        <dt>Inputs</dt>
+        <dd>Camera, mouse, phone tilt, finger, arrow keys</dd>
+        <dt>Seen in</dt>
+        <dd>A reel by Dominik Fojcik, who calls his version an experiment and not production-ready</dd>
+        <dt>Code</dt>
+        <dd><a href="https://github.com/SageWiz/made-you-look/tree/main/head-tracked-window">On GitHub</a></dd>
+      </dl>
+    </aside>
+  </div>
+
+  <nav class="nextnav" aria-label="More experiments">
+    <a href="../">All experiments</a>
+    <span class="muted">Next up: 02 Scroll through places (queued)</span>
+  </nav>
+
+  <footer class="site">
+    <span>Made by Sage in South Florida</span>
+    <nav aria-label="Elsewhere">
+      <a href="https://www.instagram.com/hellasage/">Instagram</a>
+      <a href="https://github.com/sagewiz">GitHub</a>
+      <a href="https://sejulphanord.com">sejulphanord.com</a>
+    </nav>
+  </footer>
+
+</div>
+
+<script>
+(() => {
+  // Face tracking only loads if someone picks the camera.
+  const MP_VERSION = '0.10.14';
+  const MP_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/vision_bundle.mjs`;
+  const MP_WASM = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/wasm`;
+  const MP_MODEL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+
+  const $ = (id) => document.getElementById(id);
+  const room = $('room'), ask = $('ask'), chip = $('chip');
+  const chipText = $('chip-text'), chipBtn = $('chip-btn'), note = $('note');
+  const coarse = window.matchMedia('(pointer: coarse)').matches;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // mode: ask | mouse | touch | tilt | starting | camera | still
+  let mode = reduce.matches ? 'still' : 'ask';
+  const target = { x: 0, y: 0 };   // where the viewer is, -1..1 on each axis
+  const cur = { x: 0, y: 0 };      // eased copy that actually drives the room
+  let raf = 0;
+
+  const clamp = (v) => Math.max(-1, Math.min(1, v));
+
+  function apply() {
+    room.style.setProperty('--ox', (50 + cur.x * 35).toFixed(2) + '%');
+    room.style.setProperty('--oy', (44 + cur.y * 25).toFixed(2) + '%');
+  }
+  function tick() {
+    const dx = target.x - cur.x, dy = target.y - cur.y;
+    cur.x += dx * 0.14; cur.y += dy * 0.14;
+    apply();
+    raf = (Math.abs(dx) > 0.002 || Math.abs(dy) > 0.002) ? requestAnimationFrame(tick) : 0;
+  }
+  function aim(x, y) {
+    if (mode === 'still') return;
+    target.x = clamp(x); target.y = clamp(y);
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+
+  // ---- pointer, finger, keys ----
+  function fromPointer(e) {
+    if (mode === 'tilt') return;
+    if (mode === 'camera' && !lost) return;
+    const r = room.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    aim(((e.clientX - r.left) / r.width - 0.5) * 2, ((e.clientY - r.top) / r.height - 0.5) * 2);
+  }
+  room.addEventListener('pointermove', fromPointer);
+  room.addEventListener('pointerdown', fromPointer);
+  room.addEventListener('pointerleave', (e) => {
+    if (e.pointerType === 'mouse' && mode !== 'camera' && mode !== 'tilt') aim(0, 0);
+  });
+  room.addEventListener('keydown', (e) => {
+    const step = { ArrowLeft: [-0.2, 0], ArrowRight: [0.2, 0], ArrowUp: [0, -0.2], ArrowDown: [0, 0.2] }[e.key];
+    if (!step || mode === 'still') return;
+    e.preventDefault();
+    aim(target.x + step[0], target.y + step[1]);
+  });
+
+  // ---- camera ----
+  let stream = null, video = null, landmarker = null, camRaf = 0, lastSeen = 0, lastFrame = -1, lost = false;
+
+  function stopCamera() {
+    cancelAnimationFrame(camRaf); camRaf = 0;
+    if (stream) stream.getTracks().forEach((t) => t.stop());
+    stream = null; video = null; lost = false;
+  }
+
+  async function cameraBlocked() {
+    try {
+      const p = await navigator.permissions.query({ name: 'camera' });
+      return p.state === 'denied';
+    } catch (_) { return false; }
+  }
+
+  async function startCamera() {
+    note.textContent = '';
+    if (await cameraBlocked()) {
+      mode = coarse ? 'touch' : 'mouse'; render();
+      note.textContent = "The camera is blocked for this site. Allow it in your browser's site settings, then try again.";
+      return;
+    }
+    mode = 'starting'; render();
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw Object.assign(new Error('no camera api'), { name: 'NotFoundError' });
+      }
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 320 }, height: { ideal: 240 } },
+        audio: false
+      });
+      // The video element is never added to the page. Seeing yourself breaks the illusion.
+      video = document.createElement('video');
+      video.playsInline = true; video.muted = true; video.srcObject = stream;
+      await video.play();
+      if (!landmarker) {
+        const vision = await import(MP_URL);
+        const files = await vision.FilesetResolver.forVisionTasks(MP_WASM);
+        landmarker = await vision.FaceLandmarker.createFromOptions(files, {
+          baseOptions: { modelAssetPath: MP_MODEL, delegate: 'GPU' },
+          runningMode: 'VIDEO',
+          numFaces: 1
+        });
+      }
+      if (mode !== 'starting') { stopCamera(); return; } // they backed out while it loaded
+      mode = 'camera'; lost = false; lastSeen = performance.now(); lastFrame = -1; render();
+      camRaf = requestAnimationFrame(track);
+    } catch (err) {
+      stopCamera();
+      mode = coarse ? 'touch' : 'mouse'; render();
+      // Saying no to the prompt is a normal choice, so it gets no error message.
+      if (!err || err.name !== 'NotAllowedError') {
+        note.textContent = coarse
+          ? "Couldn't start face tracking here, so drag with a finger."
+          : "Couldn't start face tracking here, so the mouse is steering.";
+      }
+    }
+  }
+
+  function track(now) {
+    if (mode !== 'camera' || !video) return;
+    if (video.readyState >= 2 && video.currentTime !== lastFrame) {
+      lastFrame = video.currentTime;
+      let face = null;
+      try {
+        const res = landmarker.detectForVideo(video, now);
+        face = res.faceLandmarks && res.faceLandmarks[0];
+      } catch (_) { face = null; }
+      if (face) {
+        // 33 and 263 are the outer corners of the eyes. Their midpoint is "where you're looking from".
+        const mx = (face[33].x + face[263].x) / 2;
+        const my = (face[33].y + face[263].y) / 2;
+        // The camera image isn't mirrored, so flip x: move right, look from the right.
+        aim((0.5 - mx) * 3.6, (my - 0.5) * 3.6);
+        lastSeen = now;
+        if (lost) { lost = false; render(); }
+      } else if (!lost && now - lastSeen > 700) {
+        lost = true; render();   // hold the last view; easing handles the return
+      }
+    }
+    camRaf = requestAnimationFrame(track);
+  }
+
+  // ---- phone tilt ----
+  let tiltBase = null, tiltSeen = false;
+  function onTilt(e) {
+    if (e.gamma == null || e.beta == null) return;
+    tiltSeen = true;
+    if (!tiltBase) tiltBase = { g: e.gamma, b: e.beta };
+    aim((e.gamma - tiltBase.g) / 22, (e.beta - tiltBase.b) / 22);
+  }
+  function stopTilt() { window.removeEventListener('deviceorientation', onTilt); }
+
+  async function startTilt() {
+    note.textContent = '';
+    try {
+      if (typeof DeviceOrientationEvent === 'undefined') throw new Error('no tilt');
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        const answer = await DeviceOrientationEvent.requestPermission();
+        if (answer !== 'granted') { mode = 'touch'; render(); return; }
+      }
+      tiltBase = null; tiltSeen = false;
+      window.addEventListener('deviceorientation', onTilt);
+      mode = 'tilt'; render();
+      setTimeout(() => {
+        if (mode === 'tilt' && !tiltSeen) {
+          stopTilt(); mode = 'touch'; render();
+          note.textContent = "This device isn't reporting tilt, so drag with a finger.";
+        }
+      }, 1500);
+    } catch (_) {
+      mode = 'touch'; render();
+      note.textContent = "This device isn't reporting tilt, so drag with a finger.";
+    }
+  }
+
+  // ---- what's on screen for each mode ----
+  let chipAction = null;
+  function setChip(text, live, btn, action) {
+    chipText.textContent = text;
+    chipText.classList.toggle('on', !!live);
+    chipBtn.hidden = !btn;
+    chipBtn.textContent = btn || '';
+    chipAction = action || null;
+  }
+  chipBtn.addEventListener('click', () => { if (chipAction) chipAction(); });
+
+  function render() {
+    ask.hidden = mode !== 'ask';
+    chip.hidden = mode === 'ask';
+    if (mode === 'mouse') setChip('Steering with the mouse', false, 'Try the camera', startCamera);
+    else if (mode === 'touch') setChip('Drag to look around', false, 'Try tilt', startTilt);
+    else if (mode === 'tilt') setChip('Steering by tilt', false, 'Stop', () => { stopTilt(); mode = 'touch'; render(); });
+    else if (mode === 'starting') setChip('Starting the camera…', false, 'Cancel', () => { stopCamera(); mode = coarse ? 'touch' : 'mouse'; render(); });
+    else if (mode === 'camera' && lost) setChip("Can't see your face. Holding this view.", false, coarse ? 'Switch to finger' : 'Switch to mouse', () => { stopCamera(); mode = coarse ? 'touch' : 'mouse'; render(); });
+    else if (mode === 'camera') setChip('Camera on', true, 'Turn camera off', () => { stopCamera(); mode = coarse ? 'touch' : 'mouse'; render(); });
+    else if (mode === 'still') setChip('Showing a still picture.', false, 'Play it anyway', () => { mode = 'ask'; render(); });
+  }
+
+  // The ask is worded for the device in hand.
+  if (coarse) {
+    $('ask-h').textContent = 'Steer by tilting?';
+    $('ask-p').textContent = 'Your phone may ask to share motion next. It only tells this page which way the phone is leaning.';
+    $('ask-yes').textContent = 'Use tilt';
+    $('ask-no').textContent = 'Drag with a finger instead';
+    $('ask-alt').hidden = false;
+    $('ask-yes').addEventListener('click', startTilt);
+    $('ask-no').addEventListener('click', () => { mode = 'touch'; render(); });
+    $('ask-cam').addEventListener('click', startCamera);
+  } else {
+    $('ask-yes').addEventListener('click', startCamera);
+    $('ask-no').addEventListener('click', () => { mode = 'mouse'; render(); });
+  }
+
+  window.addEventListener('pagehide', stopCamera);
+  render();
+})();
+</script>
+</body>
+</html>
