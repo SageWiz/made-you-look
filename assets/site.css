@@ -122,6 +122,7 @@ footer.site nav{display:flex;flex-wrap:wrap;gap:6px 20px}
 .chip{position:absolute;left:24px;bottom:24px;max-width:calc(100% - 48px);display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:var(--letter);color:var(--panel-ink);border-radius:3px;padding:8px 8px 8px 16px;font-size:15px}
 .chip .btn{min-height:44px;padding:0 14px;color:var(--panel-ink)}
 .chip .live{display:inline-flex;align-items:center;gap:8px}
+.chip .acts{display:flex;flex-wrap:wrap;gap:8px}
 .chip .live.on::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--felt)}
 .stage-note{margin-top:10px;font-size:14px;color:var(--muted);min-height:1.55em}
 
@@ -226,7 +227,7 @@ footer.site nav{display:flex;flex-wrap:wrap;gap:6px 20px}
   .ask{position:static;width:auto;max-width:none;border-radius:0;padding:20px}
   .ask .row{flex-direction:column}
   .ask .btn{min-height:50px;font-size:16px}
-  .chip{left:12px;bottom:12px;max-width:calc(100% - 24px)}
+  .chip{position:static;max-width:none;border-radius:0;padding:12px clamp(16px,4vw,32px);justify-content:space-between}
   .costs dl > div{grid-template-columns:1fr;gap:4px}
   .costs > .head{display:none}
   .costs dl > div:first-child{border-top:1px solid var(--ink)}

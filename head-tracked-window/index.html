@@ -56,7 +56,10 @@
 
     <div class="chip" id="chip" hidden>
       <span class="live" id="chip-text" role="status"></span>
-      <button type="button" class="btn ghost" id="chip-btn"></button>
+      <span class="acts">
+        <button type="button" class="btn ghost" id="chip-btn"></button>
+        <button type="button" class="btn ghost" id="chip-btn2" hidden></button>
+      </span>
     </div>
   </section>
   <p class="stage-note" id="note" aria-live="polite"></p>
@@ -159,7 +162,7 @@
 
   const $ = (id) => document.getElementById(id);
   const room = $('room'), ask = $('ask'), chip = $('chip');
-  const chipText = $('chip-text'), chipBtn = $('chip-btn'), note = $('note');
+  const chipText = $('chip-text'), chipBtn = $('chip-btn'), chipBtn2 = $('chip-btn2'), note = $('note');
   const coarse = window.matchMedia('(pointer: coarse)').matches;
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -349,25 +352,38 @@
   }
 
   // ---- what's on screen for each mode ----
-  let chipAction = null;
-  function setChip(text, live, btn, action) {
+  // The chip names the current input and offers up to two ways out of it.
+  let chipAction = null, chipAction2 = null;
+  function setChip(text, live, btn, action, btn2, action2) {
     chipText.textContent = text;
     chipText.classList.toggle('on', !!live);
     chipBtn.hidden = !btn;
     chipBtn.textContent = btn || '';
     chipAction = action || null;
+    chipBtn2.hidden = !btn2;
+    chipBtn2.textContent = btn2 || '';
+    chipAction2 = action2 || null;
   }
   chipBtn.addEventListener('click', () => { if (chipAction) chipAction(); });
+  chipBtn2.addEventListener('click', () => { if (chipAction2) chipAction2(); });
+
+  const idle = () => { mode = coarse ? 'touch' : 'mouse'; render(); };
 
   function render() {
     ask.hidden = mode !== 'ask';
     chip.hidden = mode === 'ask';
     if (mode === 'mouse') setChip('Steering with the mouse', false, 'Try the camera', startCamera);
-    else if (mode === 'touch') setChip('Drag to look around', false, 'Try tilt', startTilt);
-    else if (mode === 'tilt') setChip('Steering by tilt. Tap the room to re-center.', false, 'Stop', () => { stopTilt(); mode = 'touch'; render(); });
-    else if (mode === 'starting') setChip('Starting the camera…', false, 'Cancel', () => { stopCamera(); mode = coarse ? 'touch' : 'mouse'; render(); });
-    else if (mode === 'camera' && lost) setChip("Can't see your face. Holding this view.", false, coarse ? 'Switch to finger' : 'Switch to mouse', () => { stopCamera(); mode = coarse ? 'touch' : 'mouse'; render(); });
-    else if (mode === 'camera') setChip('Camera on', true, 'Turn camera off', () => { stopCamera(); mode = coarse ? 'touch' : 'mouse'; render(); });
+    else if (mode === 'touch') setChip('Drag to look around', false, 'Use tilt', startTilt, 'Use camera', startCamera);
+    else if (mode === 'tilt') setChip('Steering by tilt. Tap the room to re-center.', false,
+      'Use camera', () => { stopTilt(); startCamera(); },
+      'Stop', () => { stopTilt(); idle(); });
+    else if (mode === 'starting') setChip('Starting the camera…', false, 'Cancel', () => { stopCamera(); idle(); });
+    else if (mode === 'camera' && lost) setChip("Can't see your face. Holding this view.", false,
+      coarse ? 'Switch to finger' : 'Switch to mouse', () => { stopCamera(); idle(); });
+    else if (mode === 'camera' && coarse) setChip('Camera on', true,
+      'Turn camera off', () => { stopCamera(); idle(); },
+      'Use tilt', () => { stopCamera(); startTilt(); });
+    else if (mode === 'camera') setChip('Camera on', true, 'Turn camera off', () => { stopCamera(); idle(); });
     else if (mode === 'still') setChip('Showing a still picture.', false, 'Play it anyway', () => { mode = 'ask'; render(); });
   }
 
